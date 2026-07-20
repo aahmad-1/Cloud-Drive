@@ -1,0 +1,25 @@
+{
+  "name": "cloud-drive",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "client": "npm run dev --prefix client",
+    "server": "npm start --prefix server",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aahmad-1/Cloud-Drive.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aahmad-1/Cloud-Drive/issues"
+  },
+  "homepage": "https://github.com/aahmad-1/Cloud-Drive#readme",
+  "description": "",
+  "dependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
