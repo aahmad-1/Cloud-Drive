@@ -1,11 +1,20 @@
-import "./App.css"
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Navigation from "./components/Navigation";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import "./App.css";
 
 function App() {
     return (
-        <div>
-            <h1>Cloud Drive. Front end test</h1>
-        </div>
-    )
+        <BrowserRouter>
+            <Navigation />
+            <Routes>
+                <Route path="/" element={<h1 className="container">Drive placeholder, do this later</h1>} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+            </Routes>
+        </BrowserRouter>
+    );
 }
 
-export default App
+export default App;
