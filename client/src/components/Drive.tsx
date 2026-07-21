@@ -6,6 +6,8 @@ import { BsFillTrash3Fill } from "react-icons/bs";
 const Drive = () => {
     const [documents, setDocuments] = useState<ICloudDocument[]>([]);
     const [newTitle, setNewTitle] = useState<string>("");
+    const [searchTerm, setSearchTerm] = useState<string>("");
+    const [sortBy, setSortBy] = useState<string>("name");
 
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
@@ -77,12 +79,33 @@ const Drive = () => {
             console.error(error);
         }
     };
+    // filters by search term, then sorts by whichever option is selected, without mutating the original documents array
+    const displayedDocuments = documents
+        .filter((document) => document.title.toLowerCase().includes(searchTerm.toLowerCase()))
+        .sort((a, b) => {
+            if (sortBy === "name") {
+                return a.title.localeCompare(b.title);
+            }
+            if (sortBy === "created") {
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            }
+            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(); // "updated"
+        });
 
     return (
         <div className="container">
             <div className="position-relative d-flex align-items-center justify-content-end mb-5 mt-4">
                 <h1 className="position-absolute start-50 translate-middle-x m-0">{username}'s Drive</h1>
                 <Link to="/trash"><BsFillTrash3Fill size={24} /></Link>
+            </div>
+
+            <div className="d-flex mb-3">
+                <input type="text" className="form-control me-2" placeholder="Search documents..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
+                <select className="form-select" style={{ maxWidth: "200px" }} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                    <option value="name">Sort by name</option>
+                    <option value="created">Sort by created</option>
+                    <option value="updated">Sort by last updated</option>
+                </select>
             </div>
 
             <form onSubmit={createDocument} className="d-flex mb-3">
@@ -100,7 +123,7 @@ const Drive = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {documents.map((document) => (
+                    {displayedDocuments.map((document) => (
                         <tr key={document._id}>
                             <td><Link to={`/document/${document._id}`}>{document.title}</Link></td>
                             <td title={new Date(document.createdAt).toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
