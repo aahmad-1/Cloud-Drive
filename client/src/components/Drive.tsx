@@ -99,8 +99,14 @@ const Drive = () => {
                     {documents.map((document) => (
                         <tr key={document._id}>
                             <td><Link to={`/document/${document._id}`}>{document.title}</Link></td>
-                            <td>{new Date(document.createdAt).toLocaleDateString()}</td>
-                            <td>{new Date(document.updatedAt).toLocaleDateString()}</td>
+                            <td title={new Date(document.createdAt).toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
+                                {new Date(document.createdAt).toLocaleDateString("en-GB")}
+                            </td>
+                            <td title={new Date(document.updatedAt).toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
+                                {new Date(document.updatedAt).toLocaleDateString("en-GB")}
+                            </td>
+                            {/* <td>{new Date(document.createdAt).toLocaleDateString()}</td>
+                            <td>{new Date(document.updatedAt).toLocaleDateString()}</td> */}
                             <td>
                                 <button className="btn btn-outline-danger btn-sm" onClick={() => deleteDocument(document._id)}>Delete</button>
                             </td>
