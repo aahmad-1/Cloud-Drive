@@ -76,8 +76,8 @@ router.post("/login", loginValidation,
             }
 
             const token: string = jwt.sign(jwtPayload, process.env.SECRET as string, { expiresIn: "2h" })
-            // console.log("Generated JWT:", token);
-            return res.status(200).json({ token })
+            // console.log("Generated jwt and username:", token user.username);
+            return res.status(200).json({ token, username: user.username }) 
 
         } catch (error: any) {
             console.error(error)

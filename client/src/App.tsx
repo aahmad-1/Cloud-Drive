@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Navigation from "./components/Navigation";
 import Login from "./components/Login";
+import Navigation from "./components/Navigation";
 import Register from "./components/Register";
+import Drive from "./components/Drive";
 import "./App.css";
 
 function App() {
@@ -9,7 +10,7 @@ function App() {
         <BrowserRouter>
             <Navigation />
             <Routes>
-                <Route path="/" element={<h1 className="container">Drive placeholder, do this later</h1>} />
+                <Route path="/" element={<Drive />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
             </Routes>

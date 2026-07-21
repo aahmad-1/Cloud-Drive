@@ -27,6 +27,7 @@ const Login = () => {
 
             if (data.token) {
                 localStorage.setItem("token", data.token); // storing jwt in localStorage so it survives page refresh
+                localStorage.setItem("username", data.username);
                 window.location.href = "/";
             }
 
