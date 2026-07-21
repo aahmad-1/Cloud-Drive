@@ -4,6 +4,7 @@ import Navigation from "./components/Navigation";
 import Register from "./components/Register";
 import Drive from "./components/Drive";
 import DocumentEditor from "./components/DocumentEditor";
+import Trash from "./components/Trash";
 import "./App.css";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/document/:id" element={<DocumentEditor />} />
+                <Route path="/trash" element={<Trash />} />
             </Routes>
         </BrowserRouter>
     );

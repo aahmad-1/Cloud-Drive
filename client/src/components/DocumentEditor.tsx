@@ -13,6 +13,7 @@ const DocumentEditor = () => {
     const [publicView, setPublicView] = useState<boolean>(false);
     const [shareUsername, setShareUsername] = useState<string>("");
     const [shareMessage, setShareMessage] = useState<string>("");
+    const [notFound, setNotFound] = useState<boolean>(false);
 
     const editorRef = useRef<HTMLDivElement>(null); // the div on the page that Quill attaches to
     const quillRef = useRef<Quill | null>(null); // this holds the actual Quill instance
@@ -29,7 +30,7 @@ const DocumentEditor = () => {
     const fetchDocument = async () => {
         try {
             const headers: Record<string, string> = {};
-            // should only attach header if we actually have a token
+            // should only attach the header if we actually have a token
             if (token) {
                 headers["Authorization"] = `Bearer ${token}`; 
             }
@@ -38,8 +39,14 @@ const DocumentEditor = () => {
                 method: "GET",
                 headers,
             });
-
+            
             const data: ICloudDocument = await response.json();
+
+            if (!response.ok) {
+                setNotFound(true);
+                return;
+            }
+
             setTitle(data.title);
             setOwnerId(data.ownerId);
             setEditorIds(data.editorIds);
@@ -137,6 +144,14 @@ const DocumentEditor = () => {
             console.error(error);
         }
     };
+
+    if (notFound) {
+        return (
+            <div className="container">
+                <p>The file you're looking for doesn't exist or has been deleted.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="container">

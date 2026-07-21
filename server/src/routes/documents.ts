@@ -47,6 +47,23 @@ router.post("/", validateToken, async (req: CustomRequest, res: Response) => {
     }
 })
 
+// get all documents in the recycle bin (owner only) moved here since
+// moved here since express matches routes top-to-bottom, and /:id would otherwise treat "trash" as an id
+router.get("/trash", validateToken, async (req: CustomRequest, res: Response) => {
+    try {
+        const documents: ICloudDocument[] = await CloudDocument.find({
+            deleted: true,
+            ownerId: req.user?._id
+        })
+
+        return res.status(200).json(documents)
+
+    } catch (error: any) {
+        console.error(error)
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
+})
+
 // Get a single document by id (owner, editor, or public view)
 router.get("/:id", async (req: CustomRequest, res: Response) => {
     try {
@@ -156,7 +173,6 @@ router.put("/:id/share", validateToken, async (req: CustomRequest, res: Response
         }
 
         const targetUser: IUser | null = await User.findOne({ username: req.body.username })
-
         if (!targetUser) {
             return res.status(404).json({ message: "User not found" })
         }
@@ -190,6 +206,51 @@ router.put("/:id/public", validateToken, async (req: CustomRequest, res: Respons
         document.publicView = req.body.publicView
         await document.save()
         return res.status(200).json(document)
+
+    } catch (error: any) {
+        console.error(error)
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
+})
+
+// restore a document from recycle bin (owner only)
+router.put("/:id/restore", validateToken, async (req: CustomRequest, res: Response) => {
+    try {
+        const document: ICloudDocument | null = await CloudDocument.findById(req.params.id)
+
+        if (!document) {
+            return res.status(404).json({ message: "Document not found" })
+        }
+
+        if (document.ownerId !== req.user?._id) {
+            return res.status(403).json({ message: "Only the owner can restore this document" })
+        }
+
+        document.deleted = false
+        await document.save()
+        return res.status(200).json(document)
+
+    } catch (error: any) {
+        console.error(error)
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
+})
+
+// permanently delete a document from recycle bin (owner only)
+router.delete("/:id/permanent", validateToken, async (req: CustomRequest, res: Response) => {
+    try {
+        const document: ICloudDocument | null = await CloudDocument.findById(req.params.id)
+
+        if (!document) {
+            return res.status(404).json({ message: "Document not found" })
+        }
+
+        if (document.ownerId !== req.user?._id) {
+            return res.status(403).json({ message: "Only the owner can permanently delete this document" })
+        }
+
+        await CloudDocument.findByIdAndDelete(req.params.id) // removes it from the database itself
+        return res.status(200).json({ message: "Document permanently deleted" })
 
     } catch (error: any) {
         console.error(error)

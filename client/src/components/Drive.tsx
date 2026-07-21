@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { ICloudDocument } from "../types/CloudDocument";
+import { BsFillTrash3Fill } from "react-icons/bs";
 
 const Drive = () => {
     const [documents, setDocuments] = useState<ICloudDocument[]>([]);
@@ -79,7 +80,10 @@ const Drive = () => {
 
     return (
         <div className="container">
-            <h1>{username}'s Drive</h1>
+            <div className="position-relative d-flex align-items-center justify-content-end mb-5 mt-4">
+                <h1 className="position-absolute start-50 translate-middle-x m-0">{username}'s Drive</h1>
+                <Link to="/trash"><BsFillTrash3Fill size={24} /></Link>
+            </div>
 
             <form onSubmit={createDocument} className="d-flex mb-3">
                 <input type="text" className="form-control me-2" placeholder="New document title..." value={newTitle} onChange={(e) => setNewTitle(e.target.value)}/>
