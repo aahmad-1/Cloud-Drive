@@ -1,6 +1,7 @@
 import { Response, Router } from "express"
 import { CustomRequest, validateToken } from "../middleware/validateToken"
 import { CloudDocument, ICloudDocument } from "../models/CloudDocument"
+import { User, IUser } from "../models/User"
 
 const router: Router = Router()
 
@@ -134,6 +135,61 @@ router.delete("/:id", validateToken, async (req: CustomRequest, res: Response) =
         document.deleted = true
         await document.save()
         return res.status(200).json({ message: "Document successfully moved to recycle bin" })
+
+    } catch (error: any) {
+        console.error(error)
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
+})
+
+// give edit permission to another existing user (owner only)
+router.put("/:id/share", validateToken, async (req: CustomRequest, res: Response) => {
+    try {
+        const document: ICloudDocument | null = await CloudDocument.findById(req.params.id)
+
+        if (!document || document.deleted) {
+            return res.status(404).json({ message: "Document not found" })
+        }
+
+        if (document.ownerId !== req.user?._id) {
+            return res.status(403).json({ message: "Only the owner of this document can share it" })
+        }
+
+        const targetUser: IUser | null = await User.findOne({ username: req.body.username })
+
+        if (!targetUser) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        if (!document.editorIds.includes(targetUser._id.toString())) {
+            document.editorIds.push(targetUser._id.toString())
+            await document.save()
+        }
+
+        return res.status(200).json(document)
+
+    } catch (error: any) {
+        console.error(error)
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
+})
+
+// toggle the public read-only link (owner only)
+router.put("/:id/public", validateToken, async (req: CustomRequest, res: Response) => {
+    try {
+        const document: ICloudDocument | null = await CloudDocument.findById(req.params.id)
+
+        if (!document || document.deleted) {
+            return res.status(404).json({ message: "Document not found" })
+        }
+
+        if (document.ownerId !== req.user?._id) {
+            return res.status(403).json({ message: "Only the owner can change sharing by link" })
+        }
+
+        document.publicView = req.body.publicView
+        await document.save()
+        return res.status(200).json(document)
 
     } catch (error: any) {
         console.error(error)
