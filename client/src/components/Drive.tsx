@@ -79,12 +79,12 @@ const Drive = () => {
             console.error(error);
         }
     };
-    // filters by search term, then sorts by whichever option is selected, without mutating the original documents array
+    // filters by search term and then sorts by whichever option the user selected
     const displayedDocuments = documents
         .filter((document) => document.title.toLowerCase().includes(searchTerm.toLowerCase()))
         .sort((a, b) => {
             if (sortBy === "name") {
-                return a.title.localeCompare(b.title);
+                return a.title.localeCompare(b.title); //note, localCompare helps handle alphabetical order correctly (indcluding case & accents)
             }
             if (sortBy === "created") {
                 return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
