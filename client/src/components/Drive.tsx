@@ -96,7 +96,7 @@ const Drive = () => {
         <div className="container">
             <div className="position-relative d-flex align-items-center justify-content-end mb-5 mt-4">
                 <h1 className="position-absolute start-50 translate-middle-x m-0">{username}'s Drive</h1>
-                <Link to="/trash"><BsFillTrash3Fill size={24} /></Link>
+                <Link to="/trash" title="Recycle bin"><BsFillTrash3Fill size={24} /></Link>
             </div>
 
             <div className="d-flex mb-3">
