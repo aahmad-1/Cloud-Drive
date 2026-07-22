@@ -5,6 +5,8 @@ import bcrypt from "bcrypt"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { User, IUser } from "../models/User"
 import { registerValidation, loginValidation } from "../validators/inputValidation"
+import upload from "../middleware/multer-config"
+import { validateToken, CustomRequest } from "../middleware/validateToken"
 import dotenv from "dotenv"
 
 
@@ -78,6 +80,48 @@ router.post("/login", loginValidation,
             const token: string = jwt.sign(jwtPayload, process.env.SECRET as string, { expiresIn: "2h" })
             // console.log("Generated jwt and username:", token user.username);
             return res.status(200).json({ token, username: user.username }) 
+
+        } catch (error: any) {
+            console.error(error)
+            return res.status(500).json({ message: "Internal Server Error" })
+        }
+    }
+)
+
+// get the info of current logged in user
+router.get("/me", validateToken, 
+    async (req: CustomRequest, res: Response) => {
+        try {
+            const user: IUser | null = await User.findById(req.user?._id)
+            if (!user) {
+                return res.status(404).json({ message: "User not found" })
+            }
+
+            return res.status(200).json(user)
+
+        } catch (error: any) {
+            console.error(error)
+            return res.status(500).json({ message: "Internal Server Error" })
+        }
+    }
+)
+
+// upload a profile pic
+router.put("/profile-picture", validateToken, upload.single("image"),
+    async (req: CustomRequest, res: Response) => {
+        try {
+            if (!req.file) {
+                return res.status(400).json({ message: "No image uploaded" })
+            }
+
+            const imgPath = req.file.path.replace("public", "") 
+            const user: IUser | null = await User.findByIdAndUpdate(
+                req.user?._id,
+                { profilePicture: imgPath },
+                { new: true } // returns the updated document instead of the old one
+            )
+
+            return res.status(200).json(user)
 
         } catch (error: any) {
             console.error(error)

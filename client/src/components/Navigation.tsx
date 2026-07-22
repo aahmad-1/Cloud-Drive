@@ -22,7 +22,10 @@ const Navigation = () => {
                 <Link className="navbar-brand" to="/">Cloud Drive</Link>
                 <div>
                     {jwt ? (
-                        <button className="btn btn-outline-danger" onClick={logout}>Logout</button>
+                        <>
+                            <Link className="btn btn-outline-secondary me-2" to="/profile">Profile</Link>
+                            <button className="btn btn-outline-danger" onClick={logout}>Logout</button>
+                        </>
                     ) : (
                         <>
                             <Link className="btn btn-outline-primary me-2" to="/login">Login</Link>

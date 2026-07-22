@@ -5,6 +5,7 @@ import Register from "./components/Register";
 import Drive from "./components/Drive";
 import DocumentEditor from "./components/DocumentEditor";
 import Trash from "./components/Trash";
+import Profile from "./components/Profile";
 import "./App.css";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/document/:id" element={<DocumentEditor />} />
                 <Route path="/trash" element={<Trash />} />
+                <Route path="/profile" element={<Profile />} />
             </Routes>
         </BrowserRouter>
     );
