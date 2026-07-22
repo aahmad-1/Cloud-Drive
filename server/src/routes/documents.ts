@@ -18,7 +18,22 @@ router.get("/", validateToken, async (req: CustomRequest, res: Response) => {
         // without $or, Mongoose would require BOTH conditions to be true
         // not ideal since a document a user has edit perms for (but not ownership) needs to show up
 
-        return res.status(200).json(documents)
+        // find unique owner ids other than myself, so we can look up their usernames in one query
+        const otherOwnerIds = [...new Set(documents.map(doc => doc.ownerId).filter(oid => oid !== userId))]
+        const otherOwners: IUser[] = await User.find({ _id: { $in: otherOwnerIds } })
+
+        const documentsWithOwner = documents.map(doc => {
+            let ownerUsername: string
+            if (doc.ownerId === userId) {
+                ownerUsername = "You"
+            } else {
+                const owner = otherOwners.find(u => u._id.toString() === doc.ownerId)
+                ownerUsername = owner ? owner.username : "Unknown"
+            }
+            return { ...doc.toObject(), ownerUsername }
+        })
+
+        return res.status(200).json(documentsWithOwner)
 
     } catch (error: any) {
         console.error(error)
@@ -257,5 +272,39 @@ router.delete("/:id/permanent", validateToken, async (req: CustomRequest, res: R
         return res.status(500).json({ message: "Internal Server Error" })
     }
 })
+
+// clone/make a copy of an existing document (owner or editor)
+router.post("/:id/clone", validateToken, 
+    async (req: CustomRequest, res: Response) => {
+        try {
+            const original: ICloudDocument | null = await CloudDocument.findById(req.params.id)
+            if (!original || original.deleted) {
+                return res.status(404).json({ message: "Document not found" })
+            }
+
+            const userId = req.user?._id
+            const isOwner = original.ownerId === userId
+            const isEditor = original.editorIds.includes(userId)
+            if (!isOwner && !isEditor) {
+                return res.status(403).json({ message: "You do not have permission to make a copy of this document" })
+            }
+
+            const clone: ICloudDocument = await CloudDocument.create({
+                title: `Copy of ${original.title}`, // similar to google docs
+                content: original.content,
+                ownerId: userId, // the user that clones a doc becomes the owner of the copy they made
+                editorIds: [],
+                publicView: false,
+                deleted: false
+            })
+
+            return res.status(200).json(clone)
+
+        } catch (error: any) {
+            console.error(error)
+            return res.status(500).json({ message: "Internal Server Error" })
+        }
+    }
+)
 
 export default router

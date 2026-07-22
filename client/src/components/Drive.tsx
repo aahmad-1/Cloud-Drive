@@ -56,7 +56,7 @@ const Drive = () => {
             });
 
             const data = await response.json();
-            setDocuments([...documents, data]);
+            setDocuments([...documents, { ...data, ownerUsername: "You" }]); // makes sure "You" is loaded right away under owner column
             setNewTitle("");
 
         } catch (error) {
@@ -79,6 +79,23 @@ const Drive = () => {
             console.error(error);
         }
     };
+
+    const cloneDocument = async (id: string) => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/documents/${id}/clone`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            const data = await response.json();
+            setDocuments([...documents, { ...data, ownerUsername: "You" }]); // makes sure "You" is loaded right away under owner column
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     // filters by search term and then sorts by whichever option the user selected
     const displayedDocuments = documents
         .filter((document) => document.title.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -117,6 +134,7 @@ const Drive = () => {
                 <thead>
                     <tr>
                         <th>Title</th>
+                        <th>Owner</th>
                         <th>Created</th>
                         <th>Last updated</th>
                         <th></th>
@@ -126,6 +144,7 @@ const Drive = () => {
                     {displayedDocuments.map((document) => (
                         <tr key={document._id}>
                             <td><Link to={`/document/${document._id}`}>{document.title}</Link></td>
+                            <td>{document.ownerUsername}</td>
                             <td title={new Date(document.createdAt).toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
                                 {new Date(document.createdAt).toLocaleDateString()}
                             </td>
@@ -135,6 +154,7 @@ const Drive = () => {
                             {/* <td>{new Date(document.createdAt).toLocaleDateString()}</td>
                             <td>{new Date(document.updatedAt).toLocaleDateString()}</td> */}
                             <td>
+                                <button className="btn btn-outline-secondary btn-sm me-2" onClick={() => cloneDocument(document._id)}>Clone</button>
                                 <button className="btn btn-outline-danger btn-sm" onClick={() => deleteDocument(document._id)}>Delete</button>
                             </td>
                         </tr>

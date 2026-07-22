@@ -3,6 +3,7 @@ export interface ICloudDocument {
     title: string;
     content: string;
     ownerId: string;
+    ownerUsername: string;
     editorIds: string[];
     publicView: boolean;
     deleted: boolean;
