@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { BsFillMoonStarsFill, BsSunFill } from "react-icons/bs"; 
+import { BsFillMoonStarsFill, BsSunFill } from "react-icons/bs";
+import { useTranslation } from "react-i18next";
 
 const Navigation = () => {
     const [jwt, setJwt] = useState<string | null>(null);
@@ -11,6 +12,11 @@ const Navigation = () => {
             setJwt(localStorage.getItem("token"))
         }
     }, [jwt])
+
+    const { t, i18n } = useTranslation();
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
 
     const applyTheme = (t: string) => {
         document.documentElement.classList.toggle("dark", t === "dark"); // toggles our own CSS variables
@@ -36,21 +42,23 @@ const Navigation = () => {
             <div className="container-fluid">
                 <Link className="navbar-brand" to="/">Cloud Drive</Link>
                 <div>
-                    <span className="me-4" style={{ cursor: "pointer" }} title={theme === "light" ? "Dark mode" : "Light mode"} onClick={toggleTheme}>
+                    <span className="me-4" style={{ cursor: "pointer" }} title={theme === "light" ? t("Dark mode") : t("Light mode")} onClick={toggleTheme}>
                         {theme === "light" ? <BsFillMoonStarsFill size={20} /> : <BsSunFill size={20} />}
                     </span>
                     
                     {jwt ? (
                         <>
-                            <Link className="btn btn-outline-secondary me-2" to="/profile">Profile</Link>
-                            <button className="btn btn-outline-danger" onClick={logout}>Logout</button>
+                            <Link className="btn btn-outline-secondary me-2" to="/profile">{t("Profile")}</Link>
+                            <button className="btn btn-outline-danger" onClick={logout}>{t("Logout")}</button>
                         </>
                     ) : (
                         <>
-                            <Link className="btn btn-outline-primary me-2" to="/login">Login</Link>
-                            <Link className="btn btn-outline-secondary" to="/register">Register</Link>
+                            <Link className="btn btn-outline-primary me-2" to="/login">{t("Login")}</Link>
+                            <Link className="btn btn-outline-secondary" to="/register">{t("Register")}</Link>
                         </>
                     )}
+                    <button className="btn btn-outline-secondary ms-2" onClick={() => changeLanguage("fi")}>FI</button>
+                    <button className="btn btn-outline-secondary ms-1" onClick={() => changeLanguage("en")}>EN</button>
                 </div>
             </div>
         </nav>

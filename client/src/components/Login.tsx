@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const Login = () => {
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
+    const { t } = useTranslation();
     const submit = async (e: React.SyntheticEvent) => { // After v19.2.1, FormEvent is deprecated. Docs said to use SyntheticEvent instead.
         e.preventDefault();
 
@@ -39,13 +41,13 @@ const Login = () => {
 
     return (
         <div className="container mt-5" style={{ maxWidth: "400px" }}>
-            <h1>Login</h1>
+            <h1>{t("Login")}</h1>
             <form onSubmit={submit}>
-                <label htmlFor="username">Username:</label>
+                <label htmlFor="username">{t("Username")}:</label>
                 <input type="text" id="username" className="form-control mb-2" value={username} onChange={(e) => setUsername(e.target.value)}/>
-                <label htmlFor="password">Password:</label>
+                <label htmlFor="password">{t("Password")}:</label>
                 <input type="password" id="password" className="form-control mb-2" value={password} onChange={(e) => setPassword(e.target.value)}/>
-                <button type="submit" className="btn btn-primary">Login</button>
+                <button type="submit" className="btn btn-primary">{t("Login")}</button>
             </form>
         </div>
     );

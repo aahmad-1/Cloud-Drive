@@ -4,6 +4,7 @@ import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import type { ICloudDocument } from "../types/CloudDocument";
 import { jsPDF } from "jspdf";
+import { useTranslation } from "react-i18next";
 
 const DocumentEditor = () => {
     const { id } = useParams();
@@ -20,10 +21,13 @@ const DocumentEditor = () => {
     const [imageMissing, setImageMissing] = useState<boolean>(false);
     const [originalTitle, setOriginalTitle] = useState<string>("");
     const [originalContent, setOriginalContent] = useState<string>("");
+    const [saveMessageType, setSaveMessageType] = useState<string>("success");
+    const [shareMessageType, setShareMessageType] = useState<string>("success");
 
     const editorRef = useRef<HTMLDivElement>(null); // the div on the page that Quill attaches to
     const quillRef = useRef<Quill | null>(null); // this holds the actual Quill instance
     const token = localStorage.getItem("token");
+    const { t } = useTranslation();
 
     // decode id from the jwt, only if a token actually exists (this prevents crashing/page not loading for logged-out viewers)
     const myId = token ? JSON.parse(atob(token.split(".")[1]))._id : null; 
@@ -80,6 +84,7 @@ const DocumentEditor = () => {
         }
     };
 
+    // editing the contents of a text doc & renaming it
     const saveDocument = async () => {
         try {
             // note: getSemanticHTML is quill's recommended way to get HTML content from the editor
@@ -87,6 +92,7 @@ const DocumentEditor = () => {
 
                 if (title === originalTitle && content === originalContent) {
                     setSaveMessage("You made no changes to save!");
+                    setSaveMessageType("error");
                     setTimeout(() => setSaveMessage(""), 2000);
                     return;
                 }
@@ -109,6 +115,7 @@ const DocumentEditor = () => {
             }
 
             setSaveMessage("Saved!");
+            setSaveMessageType("success");
             setTimeout(() => setSaveMessage(""), 2000); // message dissapears after 2 sec
         } catch (error) {
             console.error(error);
@@ -116,7 +123,7 @@ const DocumentEditor = () => {
     };
 
     const downloadTextDoc = () => {
-        const text = quillRef.current?.getText() || ""; // plain text only, formatting isn't required per the project brief
+        const text = quillRef.current?.getText() || ""; // plain text only, 
 
         const doc = new jsPDF();
         doc.setFontSize(18);
@@ -140,7 +147,7 @@ const DocumentEditor = () => {
 
                 const img = new Image();
                 img.onload = () => {
-                    // page size = image's exact dimensions, so the image IS the page, not centered on a separate white page
+                    // page size = image's exact dimensions, so the original image becomes the page in the pdf itself
                     const doc = new jsPDF({
                         orientation: img.width > img.height ? "landscape" : "portrait",
                         unit: "px",
@@ -149,7 +156,7 @@ const DocumentEditor = () => {
 
                     doc.addImage(base64data, "JPEG", 0, 0, img.width, img.height);
 
-                    const filename = title.replace(/\.[^/.]+$/, ""); // strips the image extension (.png, .jpg, etc) from the title
+                    const filename = title.replace(/\.[^/.]+$/, ""); // strips any extensions (.png, .jpg, etc) from the title
                     doc.save(`${filename}.pdf`);
                 };
                 img.src = base64data;
@@ -161,13 +168,14 @@ const DocumentEditor = () => {
         }
     };
 
+    // download the image regularly (not as a pdf)
     const downloadImage = async () => {
         try {
             const response = await fetch(`http://localhost:3000${imagePath}`);
             const blob = await response.blob();
 
-            const actualExtension = imagePath.split(".").pop(); // gets the real saved extension, regardless of what the title says
-            const filenameWithoutExtension = title.replace(/\.[^/.]+$/, ""); // strips any extension the user left in the title
+            const actualExtension = imagePath.split(".").pop(); // gets the extension of the image, even if it isn't in the name
+            const filenameWithoutExtension = title.replace(/\.[^/.]+$/, ""); // strips any extension in the title (it may not match the one stored)
 
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -175,18 +183,18 @@ const DocumentEditor = () => {
             a.download = `${filenameWithoutExtension}.${actualExtension}`;
             a.click();
 
-            window.URL.revokeObjectURL(url); // cleans up the temporary blob url afterward
+            window.URL.revokeObjectURL(url); // cleans up the temp blob url afterward
         } catch (error) {
             console.error(error);
         }
     };
 
+
     const shareDocument = async () => {
 
-        const trimmed = shareUsername.trim();
-
-        if (trimmed.length < 3 || trimmed.length > 25) {
+        if (shareUsername.trim().length < 3 || shareUsername.trim().length > 25) {
             setShareMessage("Please enter a valid username (3-25 characters)");
+            setShareMessageType("error");
             setTimeout(() => setShareMessage(""), 2000);
             return;
         }
@@ -204,12 +212,14 @@ const DocumentEditor = () => {
             const data = await response.json();
             if (!response.ok) {
                 setShareMessage(data.message || "Could not share document");
+                setShareMessageType("error");
                 setTimeout(() => setShareMessage(""), 2000);
                 return;
             }
 
             setEditorIds(data.editorIds);
-            setShareMessage(`Shared with ${shareUsername}`);
+            setShareMessage(`Shared with {{shareUsername}}`);
+            setShareMessageType("success");
             setShareUsername("");
             
         } catch (error) {
@@ -217,6 +227,7 @@ const DocumentEditor = () => {
         }
     };
 
+    // toggles a shareable link that lets anyone (logged in or not) to view a file
     const togglePublicView = async () => {
         try {
             const response = await fetch(`http://localhost:3000/api/documents/${id}/public`, {
@@ -236,10 +247,12 @@ const DocumentEditor = () => {
         }
     };
 
+    // renaming an image doc
     const renameImage = async () => {
 
         if (title === originalTitle) {
             setSaveMessage("You made no changes to the name!");
+            setSaveMessageType("error");
             setTimeout(() => setSaveMessage(""), 2000);
             return;
         }
@@ -260,7 +273,9 @@ const DocumentEditor = () => {
             }
 
             setSaveMessage("Rename Saved!");
+            setSaveMessageType("success");
             setTimeout(() => setSaveMessage(""), 2000);
+
         } catch (error) {
             console.error(error);
         }
@@ -283,7 +298,7 @@ const DocumentEditor = () => {
             <div className="d-flex align-items-stretch mb-4">
                 <input type="text" className="form-control me-3" style={{ fontSize: "1.5rem", fontWeight: "bold" }} value={title}  disabled={!canEdit} onChange={(e) => setTitle(e.target.value)}/>
                 {canEdit && docType === "image" && (
-                    <button className="btn btn-primary text-nowrap" onClick={renameImage}>Rename</button>
+                    <button className="btn btn-primary text-nowrap" onClick={renameImage}>{t("Rename")}</button>
                 )}
             </div>
 
@@ -291,8 +306,8 @@ const DocumentEditor = () => {
                 imageMissing ? (
                     <div className="text-center">
                         <img src="/No-Image-Placeholder.svg" alt="Missing" style={{ maxWidth: "300px" }} />
-                        <p className="text-muted mt-2">The image you're looking for has either been deleted, not in the database, or is an unsupported file type!</p>
-                        <p className="text-muted mt-2">The following image formats are supported for upload: JPG, PNG, GIF, WebP, SVG, BMP, ICO, AVIF.</p>
+                        <p className="text-muted mt-4">{t("The image you're looking for has either been deleted, not in the database, or is an unsupported file type!")}</p>
+                        <p className="text-muted mb-4">{t("The following image formats are supported for upload: JPG, PNG, GIF, WebP, SVG, BMP, ICO, AVIF.")}</p>
                     </div>
                 ) : (
                     <div>
@@ -304,41 +319,39 @@ const DocumentEditor = () => {
             )}
 
             {canEdit && docType === "text" && (
-                <button className="btn btn-primary mt-3" onClick={saveDocument}>Save</button>
+                <button className="btn btn-primary mt-3" onClick={saveDocument}>{t("Save")}</button>
             )}
             {docType === "text" && (
-                <button className="btn btn-outline-primary mt-3 ms-2" onClick={downloadTextDoc}>Download Document as PDF</button>
+                <button className="btn btn-outline-primary mt-3 ms-2" onClick={downloadTextDoc}>{t("Download Document as PDF")}</button>
             )}
             {docType === "image" && !imageMissing && (
                 <>
-                    <button className="btn btn-outline-primary mt-3" title={isAnimatable ? "Only the first frame of this image will be downloaded if it's moving" : undefined} onClick={downloadImageDoc}>Download Image as PDF</button>
-                    <button className="btn btn-outline-primary mt-3 ms-2" onClick={downloadImage}>Download Image</button>
+                    <button className="btn btn-outline-primary mt-3" title={isAnimatable ? t("Only the first frame of this image will be downloaded if it's moving") : undefined} onClick={downloadImageDoc}>{t("Download Image as PDF")}</button>
+                    <button className="btn btn-outline-primary mt-3 ms-2" onClick={downloadImage}>{t("Download Image")}</button>
                 </>
             )}
 
-            {saveMessage && <p className="text-success mt-3">{saveMessage}</p>}
+            {saveMessage && <p className={`mt-4 ${saveMessageType === "success" ? "text-success" : "text-danger"}`}>{t(saveMessage)}</p>}
 
             {myId === ownerId && (
                 <div className="mt-4 border-top pt-3">
-                    <h5>Sharing</h5>
+                    <h5 className="mt-2 mb-3">{t("Sharing")}</h5>
 
-                    <div className="d-flex mb-2">
-                        <input type="text" className="form-control me-2" placeholder="Username to give edit access..." value={shareUsername} onChange={(e) => setShareUsername(e.target.value)}/>
-                        <button className="btn btn-secondary" onClick={shareDocument}>Share</button>
+                    <div className="d-flex mb-4">
+                        <input type="text" className="form-control me-2" placeholder={t("Username to give edit access...")} value={shareUsername} onChange={(e) => setShareUsername(e.target.value)}/>
+                        <button className="btn btn-secondary" onClick={shareDocument}>{t("Share")}</button>
                     </div>
 
-                    {shareMessage && <p>{shareMessage}</p>}
+                    {shareMessage && <p className={shareMessageType === "success" ? "text-success" : "text-danger"}>{t(shareMessage, { username: shareUsername })}</p>}
 
                     <div className="form-check form-switch">
-                        <input className="form-check-input" type="checkbox" checked={publicView} onChange={togglePublicView}/>
-                        <label className="form-check-label">
-                            Anyone with the link can view (read-only)
-                        </label>
+                        <input className="mt-2 form-check-input" type="checkbox" checked={publicView} onChange={togglePublicView}/>
+                        <label className="mt-2 form-check-label">{t("Anyone with the link can view (read-only)")}</label>
                     </div>
 
                     {publicView && (
                         <p className="mt-2">
-                            Share link: <code>{window.location.origin}/document/{id}</code>
+                            {t("Share link")}: <code>{window.location.origin}/document/{id}</code>
                         </p>
                     )}
                 </div>

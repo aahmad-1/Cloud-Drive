@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import type { ICloudDocument } from "../types/CloudDocument";
+import { useTranslation } from "react-i18next";
+
 
 const Trash = () => {
     const [documents, setDocuments] = useState<ICloudDocument[]>([]);
-
     const token = localStorage.getItem("token");
+    const { t, i18n } = useTranslation();
+    const dateLocale = i18n.language === "fi" ? "fi-FI" : "en-US";
 
     useEffect(() => {
         if (!token) {
@@ -64,16 +67,16 @@ const Trash = () => {
 
     return (
         <div className="container">
-            <h1>Recycle Bin</h1>
+            <h1>{t("Recycle Bin")}</h1>
 
             {documents.length === 0 ? (
-                <p className="text-muted">Nothing to see here! Delete some files first.</p>
+                <p className="text-muted mt-5">{t("Nothing to see here! Delete some files first.")}</p>
             ) : (
-                <table className="table">
+                <table className="table mt-5">
                     <thead>
                         <tr>
-                            <th>Title</th>
-                            <th>Deleted at</th>
+                            <th>{t("Title")}</th>
+                            <th>{t("Deleted at")}</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -81,12 +84,12 @@ const Trash = () => {
                         {documents.map((document) => (
                             <tr key={document._id}>
                                 <td>{document.title}</td>
-                                <td title={new Date(document.deletedAt!).toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
-                                    {new Date(document.deletedAt!).toLocaleDateString("en-GB")}
+                                <td title={new Date(document.deletedAt!).toLocaleString(dateLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
+                                    {new Date(document.deletedAt!).toLocaleDateString()}
                                 </td>
                                 <td className="text-end">
-                                    <button className="btn btn-outline-success btn-sm me-2" onClick={() => restoreDocument(document._id)}>Restore</button>
-                                    <button className="btn btn-outline-danger btn-sm" onClick={() => permanentlyDelete(document._id)}>Delete permanently</button>
+                                    <button className="btn btn-outline-success btn-sm me-2" onClick={() => restoreDocument(document._id)}>{t("Restore")}</button>
+                                    <button className="btn btn-outline-danger btn-sm" onClick={() => permanentlyDelete(document._id)}>{t("Delete permanently")}</button>
                                 </td>
                             </tr>
                         ))}

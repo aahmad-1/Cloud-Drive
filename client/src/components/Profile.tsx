@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const Profile = () => {
     const [username, setUsername] = useState<string>("");
@@ -8,6 +9,8 @@ const Profile = () => {
     const [loading, setLoading] = useState<boolean>(true); // avoids flickering of profile pics
 
     const token = localStorage.getItem("token");
+
+    const { t } = useTranslation();
 
     useEffect(() => {
         fetchMyInfo();
@@ -58,7 +61,7 @@ const Profile = () => {
 
     return (
         <div className="container">
-            <h1>Profile</h1>
+            <h1 className="mb-4">{t("Profile")}</h1>
 
             {loading ? (
                 <div style={{ width: "100px", height: "100px" }}></div>
@@ -83,8 +86,8 @@ const Profile = () => {
             )}
 
             <div className="mt-3">
-                <input type="file" className="form-control mb-2" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-                <button className="btn btn-primary" onClick={uploadProfilePicture}>Upload picture</button>
+                <input type="file" className="form-control mt-4" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                <button className="btn btn-primary mt-4" onClick={uploadProfilePicture}>{t("Upload picture")}</button>
             </div>
         </div>
     );
