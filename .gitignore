@@ -2,4 +2,7 @@ node_modules/
 dist/
 .env
 client/dist/
-/server/public/images/*
+
+# Ignore uploaded images, but keep the folder structure
+server/public/images/*
+!server/public/images/.gitkeep
