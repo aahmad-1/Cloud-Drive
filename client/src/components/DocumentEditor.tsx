@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import type { ICloudDocument } from "../types/CloudDocument";
+import { jsPDF } from "jspdf";
 
 const DocumentEditor = () => {
     const { id } = useParams();
@@ -16,6 +17,7 @@ const DocumentEditor = () => {
     const [notFound, setNotFound] = useState<boolean>(false);
     const [docType, setDocType] = useState<string>("text");
     const [imagePath, setImagePath] = useState<string>("");
+    const [imageMissing, setImageMissing] = useState<boolean>(false);
 
     const editorRef = useRef<HTMLDivElement>(null); // the div on the page that Quill attaches to
     const quillRef = useRef<Quill | null>(null); // this holds the actual Quill instance
@@ -99,6 +101,52 @@ const DocumentEditor = () => {
 
             setSaveMessage("Saved!");
             setTimeout(() => setSaveMessage(""), 2000); // message dissapears after 2 sec
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const downloadTextDoc = () => {
+        const text = quillRef.current?.getText() || ""; // plain text only, formatting isn't required per the project brief
+
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text(title, 10, 15);
+
+        doc.setFontSize(12);
+        const lines = doc.splitTextToSize(text, 180); // wraps long text to fit the page width
+        doc.text(lines, 10, 30);
+
+        doc.save(`${title}.pdf`);
+    };
+
+    const downloadImageDoc = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000${imagePath}`);
+            const blob = await response.blob();
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64data = reader.result as string;
+
+                const img = new Image();
+                img.onload = () => {
+                    // page size = image's exact dimensions, so the image IS the page, not centered on a separate white page
+                    const doc = new jsPDF({
+                        orientation: img.width > img.height ? "landscape" : "portrait",
+                        unit: "px",
+                        format: [img.width, img.height],
+                    });
+
+                    doc.addImage(base64data, "JPEG", 0, 0, img.width, img.height);
+
+                    const filename = title.replace(/\.[^/.]+$/, ""); // strips the image extension (.png, .jpg, etc) from the title
+                    doc.save(`${filename}.pdf`);
+                };
+                img.src = base64data;
+            };
+            reader.readAsDataURL(blob);
+
         } catch (error) {
             console.error(error);
         }
@@ -189,14 +237,31 @@ const DocumentEditor = () => {
                     <button className="btn btn-primary text-nowrap" onClick={renameImage}>Rename</button>
                 )}
             </div>
+
             {docType === "image" ? (
-                <img src={`http://localhost:3000${imagePath}`} alt={title} className="img-fluid" />
+                imageMissing ? (
+                    <div className="text-center">
+                        <img src="/No-Image-Placeholder.svg" alt="Missing" style={{ maxWidth: "300px" }} />
+                        <p className="text-muted mt-2">The image you're looking for has either been deleted, not in the database, or is an unsupported file type!</p>
+                        <p className="text-muted mt-2">The following image formats are supported for upload: JPG, PNG, GIF, WebP, SVG, BMP, ICO, AVIF.</p>
+                    </div>
+                ) : (
+                    <div>
+                        <img src={`http://localhost:3000${imagePath}`} alt={title} className="img-fluid" onError={() => setImageMissing(true)}/>
+                    </div>
+                )
             ) : (
                 <div ref={editorRef} style={{ minHeight: "300px", backgroundColor: "white" }}></div>
             )}
 
             {canEdit && docType === "text" && (
                 <button className="btn btn-primary mt-3" onClick={saveDocument}>Save</button>
+            )}
+            {docType === "text" && (
+                <button className="btn btn-outline-primary mt-3 ms-2" onClick={downloadTextDoc}>Download PDF</button>
+            )}
+            {docType === "image" && !imageMissing && (
+                <button className="btn btn-outline-primary mt-3" onClick={downloadImageDoc}>Download PDF</button>
             )}
 
             {saveMessage && <span className="ms-2 text-success">{saveMessage}</span>}
