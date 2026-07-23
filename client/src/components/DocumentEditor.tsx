@@ -18,6 +18,8 @@ const DocumentEditor = () => {
     const [docType, setDocType] = useState<string>("text");
     const [imagePath, setImagePath] = useState<string>("");
     const [imageMissing, setImageMissing] = useState<boolean>(false);
+    const [originalTitle, setOriginalTitle] = useState<string>("");
+    const [originalContent, setOriginalContent] = useState<string>("");
 
     const editorRef = useRef<HTMLDivElement>(null); // the div on the page that Quill attaches to
     const quillRef = useRef<Quill | null>(null); // this holds the actual Quill instance
@@ -52,6 +54,7 @@ const DocumentEditor = () => {
             }
 
             setTitle(data.title);
+            setOriginalTitle(data.title);
             setOwnerId(data.ownerId);
             setEditorIds(data.editorIds);
             setPublicView(data.publicView);
@@ -67,8 +70,8 @@ const DocumentEditor = () => {
             if (data.type === "text" && editorRef.current && !quillRef.current) { 
                 quillRef.current = new Quill(editorRef.current, options)
                 quillRef.current.clipboard.dangerouslyPasteHTML(data.content); // loading saved HTML content into quill
-                // fixes issue that when a user (logged in or out) views a document via link they can type in the content box (they shouldn't be able to)
-                const canEditNow = myId !== null && (myId === data.ownerId || data.editorIds.includes(myId));
+                setOriginalContent(quillRef.current.getSemanticHTML());
+                const canEditNow = myId !== null && (myId === data.ownerId || data.editorIds.includes(myId)); // fixes issue that when a user (logged in or out) views a document via link they can type in the content box (they shouldn't be able to)
                 quillRef.current.enable(canEditNow);
             }
 
@@ -81,6 +84,12 @@ const DocumentEditor = () => {
         try {
             // note: getSemanticHTML is quill's recommended way to get HTML content from the editor
             const content = quillRef.current?.getSemanticHTML() || "";
+
+                if (title === originalTitle && content === originalContent) {
+                    setSaveMessage("You made no changes to save!");
+                    setTimeout(() => setSaveMessage(""), 2000);
+                    return;
+                }
 
             const response = await fetch(`http://localhost:3000/api/documents/${id}`, {
                 method: "PUT",
@@ -152,7 +161,36 @@ const DocumentEditor = () => {
         }
     };
 
+    const downloadImage = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000${imagePath}`);
+            const blob = await response.blob();
+
+            const actualExtension = imagePath.split(".").pop(); // gets the real saved extension, regardless of what the title says
+            const filenameWithoutExtension = title.replace(/\.[^/.]+$/, ""); // strips any extension the user left in the title
+
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${filenameWithoutExtension}.${actualExtension}`;
+            a.click();
+
+            window.URL.revokeObjectURL(url); // cleans up the temporary blob url afterward
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     const shareDocument = async () => {
+
+        const trimmed = shareUsername.trim();
+
+        if (trimmed.length < 3 || trimmed.length > 25) {
+            setShareMessage("Please enter a valid username (3-25 characters)");
+            setTimeout(() => setShareMessage(""), 2000);
+            return;
+        }
+
         try {
             const response = await fetch(`http://localhost:3000/api/documents/${id}/share`, {
                 method: "PUT",
@@ -166,6 +204,7 @@ const DocumentEditor = () => {
             const data = await response.json();
             if (!response.ok) {
                 setShareMessage(data.message || "Could not share document");
+                setTimeout(() => setShareMessage(""), 2000);
                 return;
             }
 
@@ -198,6 +237,13 @@ const DocumentEditor = () => {
     };
 
     const renameImage = async () => {
+
+        if (title === originalTitle) {
+            setSaveMessage("You made no changes to the name!");
+            setTimeout(() => setSaveMessage(""), 2000);
+            return;
+        }
+
         try {
             const response = await fetch(`http://localhost:3000/api/documents/${id}`, {
                 method: "PUT",
@@ -213,7 +259,7 @@ const DocumentEditor = () => {
                 return;
             }
 
-            setSaveMessage("Saved!");
+            setSaveMessage("Rename Saved!");
             setTimeout(() => setSaveMessage(""), 2000);
         } catch (error) {
             console.error(error);
@@ -227,6 +273,9 @@ const DocumentEditor = () => {
             </div>
         );
     }
+
+    // checks the what type of extension an animated image has
+    const isAnimatable = imagePath.split(".").pop()?.toLowerCase() === "gif" || imagePath.split(".").pop()?.toLowerCase() === "webp";
 
     return (
         <div className="container">
@@ -258,13 +307,16 @@ const DocumentEditor = () => {
                 <button className="btn btn-primary mt-3" onClick={saveDocument}>Save</button>
             )}
             {docType === "text" && (
-                <button className="btn btn-outline-primary mt-3 ms-2" onClick={downloadTextDoc}>Download PDF</button>
+                <button className="btn btn-outline-primary mt-3 ms-2" onClick={downloadTextDoc}>Download Document as PDF</button>
             )}
             {docType === "image" && !imageMissing && (
-                <button className="btn btn-outline-primary mt-3" onClick={downloadImageDoc}>Download PDF</button>
+                <>
+                    <button className="btn btn-outline-primary mt-3" title={isAnimatable ? "Only the first frame of this image will be downloaded if it's moving" : undefined} onClick={downloadImageDoc}>Download Image as PDF</button>
+                    <button className="btn btn-outline-primary mt-3 ms-2" onClick={downloadImage}>Download Image</button>
+                </>
             )}
 
-            {saveMessage && <span className="ms-2 text-success">{saveMessage}</span>}
+            {saveMessage && <p className="text-success mt-3">{saveMessage}</p>}
 
             {myId === ownerId && (
                 <div className="mt-4 border-top pt-3">
