@@ -31,7 +31,7 @@ const Profile = () => {
         }
     };
 
-    const uploadPicture = async () => {
+    const uploadProfilePicture = async () => {
         if (!file) return;
 
         const formData = new FormData();
@@ -84,7 +84,7 @@ const Profile = () => {
 
             <div className="mt-3">
                 <input type="file" className="form-control mb-2" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-                <button className="btn btn-primary" onClick={uploadPicture}>Upload picture</button>
+                <button className="btn btn-primary" onClick={uploadProfilePicture}>Upload picture</button>
             </div>
         </div>
     );

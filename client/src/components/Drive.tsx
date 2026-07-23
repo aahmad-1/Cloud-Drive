@@ -8,6 +8,7 @@ const Drive = () => {
     const [newTitle, setNewTitle] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [sortBy, setSortBy] = useState<string>("name");
+    const [imageFile, setImageFile] = useState<File | null>(null);
 
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
@@ -67,13 +68,13 @@ const Drive = () => {
     // delete a document
     const deleteDocument = async (id: string) => {
         try {
-            await fetch(`http://localhost:3000/api/documents/${id}`, {
+            const response = await fetch(`http://localhost:3000/api/documents/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
             });
-
+            if (!response.ok) return; // not the owner so nothing actually happened on server-side
             setDocuments(documents.filter((document) => document._id !== id)); // remove deleted doc from state without refetching everything
         } catch (error) {
             console.error(error);
@@ -109,6 +110,28 @@ const Drive = () => {
             return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(); // "updated"
         });
 
+    const uploadImage = async () => {
+        if (!imageFile) return;
+        const formData = new FormData();
+        formData.append("image", imageFile);
+
+        try {
+            const response = await fetch("http://localhost:3000/api/documents/upload-image", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: formData,
+            });
+
+            const data = await response.json();
+            setDocuments([...documents, { ...data, ownerUsername: "You" }]);
+            setImageFile(null);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     return (
         <div className="container">
             <div className="position-relative d-flex align-items-center justify-content-end mb-5 mt-4">
@@ -129,6 +152,11 @@ const Drive = () => {
                 <input type="text" className="form-control me-2" placeholder="New document title..." value={newTitle} onChange={(e) => setNewTitle(e.target.value)}/>
                 <button type="submit" className="btn btn-primary">Create</button>
             </form>
+
+            <div className="d-flex align-items-center mb-3">
+                <input type="file" className="form-control me-2" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                <button className="btn btn-secondary text-nowrap" onClick={uploadImage}>Upload image</button>
+            </div>
 
             <table className="table">
                 <thead>
@@ -155,7 +183,9 @@ const Drive = () => {
                             <td>{new Date(document.updatedAt).toLocaleDateString()}</td> */}
                             <td>
                                 <button className="btn btn-outline-secondary btn-sm me-2" onClick={() => cloneDocument(document._id)}>Clone</button>
-                                <button className="btn btn-outline-danger btn-sm" onClick={() => deleteDocument(document._id)}>Delete</button>
+                                {document.ownerUsername === "You" && (
+                                    <button className="btn btn-outline-danger btn-sm" onClick={() => deleteDocument(document._id)}>Delete</button>
+                                )}
                             </td>
                         </tr>
                     ))}

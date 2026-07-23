@@ -14,6 +14,8 @@ const DocumentEditor = () => {
     const [shareUsername, setShareUsername] = useState<string>("");
     const [shareMessage, setShareMessage] = useState<string>("");
     const [notFound, setNotFound] = useState<boolean>(false);
+    const [docType, setDocType] = useState<string>("text");
+    const [imagePath, setImagePath] = useState<string>("");
 
     const editorRef = useRef<HTMLDivElement>(null); // the div on the page that Quill attaches to
     const quillRef = useRef<Quill | null>(null); // this holds the actual Quill instance
@@ -51,14 +53,16 @@ const DocumentEditor = () => {
             setOwnerId(data.ownerId);
             setEditorIds(data.editorIds);
             setPublicView(data.publicView);
+            setDocType(data.type);
+            setImagePath(data.imagePath || "");
 
             const options = {
                 placeholder: 'Enter anything!',
                 theme: 'snow'
             }
 
-            // checks if div rendered in AND the quill hasn't been made yet. should avoid duplicate quill editors
-            if (editorRef.current && !quillRef.current) { 
+            // checks if the document uploaded is of text (not image) and checks if the div rendered in AND the quill hasn't been made yet. should skip quill for images and avoid duplicate quill editors
+            if (data.type === "text" && editorRef.current && !quillRef.current) { 
                 quillRef.current = new Quill(editorRef.current, options)
                 quillRef.current.clipboard.dangerouslyPasteHTML(data.content); // loading saved HTML content into quill
                 // fixes issue that when a user (logged in or out) views a document via link they can type in the content box (they shouldn't be able to)
@@ -145,6 +149,29 @@ const DocumentEditor = () => {
         }
     };
 
+    const renameImage = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/documents/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ title }),
+            });
+
+            if (!response.ok) {
+                setSaveMessage("Could not save");
+                return;
+            }
+
+            setSaveMessage("Saved!");
+            setTimeout(() => setSaveMessage(""), 2000);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     if (notFound) {
         return (
             <div className="container">
@@ -156,10 +183,19 @@ const DocumentEditor = () => {
     return (
         <div className="container">
             {!canEdit && <p className="text-muted">View only</p>}
-            <input type="text" className="form-control mb-3" style={{ fontSize: "1.5rem", fontWeight: "bold" }} value={title}  disabled={!canEdit} onChange={(e) => setTitle(e.target.value)}/>
-            <div ref={editorRef} style={{ minHeight: "300px", backgroundColor: "white" }}></div>
+            <div className="d-flex align-items-stretch mb-4">
+                <input type="text" className="form-control me-3" style={{ fontSize: "1.5rem", fontWeight: "bold" }} value={title}  disabled={!canEdit} onChange={(e) => setTitle(e.target.value)}/>
+                {canEdit && docType === "image" && (
+                    <button className="btn btn-primary text-nowrap" onClick={renameImage}>Rename</button>
+                )}
+            </div>
+            {docType === "image" ? (
+                <img src={`http://localhost:3000${imagePath}`} alt={title} className="img-fluid" />
+            ) : (
+                <div ref={editorRef} style={{ minHeight: "300px", backgroundColor: "white" }}></div>
+            )}
 
-            {canEdit && (
+            {canEdit && docType === "text" && (
                 <button className="btn btn-primary mt-3" onClick={saveDocument}>Save</button>
             )}
 

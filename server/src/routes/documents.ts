@@ -2,6 +2,7 @@ import { Response, Router } from "express"
 import { CustomRequest, validateToken } from "../middleware/validateToken"
 import { CloudDocument, ICloudDocument } from "../models/CloudDocument"
 import { User, IUser } from "../models/User"
+import upload from "../middleware/multer-config"
 
 const router: Router = Router()
 
@@ -164,8 +165,11 @@ router.delete("/:id", validateToken, async (req: CustomRequest, res: Response) =
             return res.status(403).json({ message: "Only the owner of this document can delet it" })
         }
 
-        document.deleted = true
-        await document.save()
+        await CloudDocument.updateOne( // ensures the "last updated field" doesnt update when deleting a doc/image to recycle bin
+            { _id: document._id },
+            { $set: { deleted: true, deletedAt: new Date() } },
+            { timestamps: false }
+        )
         return res.status(200).json({ message: "Document successfully moved to recycle bin" })
 
     } catch (error: any) {
@@ -192,12 +196,15 @@ router.put("/:id/share", validateToken, async (req: CustomRequest, res: Response
             return res.status(404).json({ message: "User not found" })
         }
 
-        if (!document.editorIds.includes(targetUser._id.toString())) {
-            document.editorIds.push(targetUser._id.toString())
-            await document.save()
+        if (!document.editorIds.includes(targetUser._id.toString())) { // ensures the "last updated field" doesnt update when sharing a doc by username
+            await CloudDocument.updateOne(
+                { _id: document._id },
+                { $push: { editorIds: targetUser._id.toString() } },
+                { timestamps: false }
+            )
         }
-
-        return res.status(200).json(document)
+        const updated = await CloudDocument.findById(document._id)
+        return res.status(200).json(updated)
 
     } catch (error: any) {
         console.error(error)
@@ -218,9 +225,13 @@ router.put("/:id/public", validateToken, async (req: CustomRequest, res: Respons
             return res.status(403).json({ message: "Only the owner can change sharing by link" })
         }
 
-        document.publicView = req.body.publicView
-        await document.save()
-        return res.status(200).json(document)
+        await CloudDocument.updateOne( // ensures the "last updated field" doesnt update when sharing a doc by link
+            { _id: document._id },
+            { $set: { publicView: req.body.publicView } },
+            { timestamps: false }
+        )
+        const updated = await CloudDocument.findById(document._id)
+        return res.status(200).json(updated)
 
     } catch (error: any) {
         console.error(error)
@@ -241,9 +252,13 @@ router.put("/:id/restore", validateToken, async (req: CustomRequest, res: Respon
             return res.status(403).json({ message: "Only the owner can restore this document" })
         }
 
-        document.deleted = false
-        await document.save()
-        return res.status(200).json(document)
+        await CloudDocument.updateOne( // ensures the "last updated field" doesnt update when restoring a doc/image from recycle bin
+            { _id: document._id },
+            { $set: { deleted: false, deletedAt: null } },
+            { timestamps: false }
+        )
+        const updated = await CloudDocument.findById(document._id)
+        return res.status(200).json(updated)
 
     } catch (error: any) {
         console.error(error)
@@ -299,6 +314,34 @@ router.post("/:id/clone", validateToken,
             })
 
             return res.status(200).json(clone)
+
+        } catch (error: any) {
+            console.error(error)
+            return res.status(500).json({ message: "Internal Server Error" })
+        }
+    }
+)
+
+// upload an image as a new doc in the drive
+router.post("/upload-image", validateToken, upload.single("image"),
+    async (req: CustomRequest, res: Response) => {
+        try {
+            if (!req.file) {
+                return res.status(400).json({ message: "No image uploaded" })
+            }
+
+            const imgPath = req.file.path.replace("public", "")
+            const newDocument: ICloudDocument = await CloudDocument.create({
+                title: req.body.title || req.file.originalname,
+                content: "",
+                type: "image",
+                imagePath: imgPath,
+                ownerId: req.user?._id,
+                editorIds: [],
+                publicView: false,
+                deleted: false
+            })
+            return res.status(200).json(newDocument)
 
         } catch (error: any) {
             console.error(error)

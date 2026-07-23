@@ -9,4 +9,7 @@ export interface ICloudDocument {
     deleted: boolean;
     createdAt: string;
     updatedAt: string;
+    deletedAt?: string;
+    type: string;
+    imagePath?: string;
 }
