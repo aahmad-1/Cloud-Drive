@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { ICloudDocument } from "../types/CloudDocument";
 import { BsFillTrash3Fill } from "react-icons/bs";
@@ -13,6 +13,7 @@ const Drive = () => {
 
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
+    const fileInputRef = useRef<HTMLInputElement>(null); // will help translating the words inside the file upload input fields
 
     const { t, i18n } = useTranslation();
     const dateLocale = i18n.language === "fi" ? "fi-FI" : "en-US";
@@ -158,9 +159,13 @@ const Drive = () => {
                 <input type="text" className="form-control me-2" placeholder={t("New document title...")} value={newTitle} onChange={(e) => setNewTitle(e.target.value)}/>
                 <button type="submit" className="btn btn-primary">{t("Create")}</button>
             </form>
-
+            
             <div className="d-flex align-items-center mb-3">
-                <input type="file" className="form-control me-2" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                <input type="file" ref={fileInputRef} className="d-none" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                <div className="input-group me-2">
+                    <button type="button" className="btn border bg-light text-dark" onClick={() => fileInputRef.current?.click()}>{t("Choose File")}</button>
+                    <span className="form-control bg-white text-dark d-flex align-items-center">{imageFile ? imageFile.name : t("No file chosen")}</span>
+                </div>
                 <button className="btn btn-secondary text-nowrap" onClick={uploadImage}>{t("Upload image")}</button>
             </div>
 
@@ -178,7 +183,7 @@ const Drive = () => {
                     {displayedDocuments.map((document) => (
                         <tr key={document._id}>
                             <td><Link to={`/document/${document._id}`}>{document.title}</Link></td>
-                            <td>{document.ownerUsername}</td>
+                            <td>{document.ownerUsername === "You" ? t("You") : document.ownerUsername}</td>
                             <td title={new Date(document.createdAt).toLocaleString(dateLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
                                 {new Date(document.createdAt).toLocaleDateString()}
                             </td>

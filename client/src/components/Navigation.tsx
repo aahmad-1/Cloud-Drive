@@ -57,8 +57,9 @@ const Navigation = () => {
                             <Link className="btn btn-outline-secondary" to="/register">{t("Register")}</Link>
                         </>
                     )}
-                    <button className="btn btn-outline-secondary ms-2" onClick={() => changeLanguage("fi")}>FI</button>
-                    <button className="btn btn-outline-secondary ms-1" onClick={() => changeLanguage("en")}>EN</button>
+                    <button className="btn btn-outline-secondary ms-2" onClick={() => changeLanguage(i18n.language === "fi" ? "en" : "fi")}>
+                        {i18n.language === "fi" ? "EN" : "FI"}
+                    </button>
                 </div>
             </div>
         </nav>

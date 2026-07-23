@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const Profile = () => {
@@ -11,6 +11,7 @@ const Profile = () => {
     const token = localStorage.getItem("token");
 
     const { t } = useTranslation();
+    const fileInputRef = useRef<HTMLInputElement>(null); // helps translate the words inside the file upload input fields
 
     useEffect(() => {
         fetchMyInfo();
@@ -61,7 +62,7 @@ const Profile = () => {
 
     return (
         <div className="container">
-            <h1 className="mb-4">{t("Profile")}</h1>
+            <h1 className="mb-4">{username}'s {t("Profile")}</h1>
 
             {loading ? (
                 <div style={{ width: "100px", height: "100px" }}></div>
@@ -85,12 +86,18 @@ const Profile = () => {
                 </div>
             )}
 
-            <div className="mt-3">
-                <input type="file" className="form-control mt-4" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-                <button className="btn btn-primary mt-4" onClick={uploadProfilePicture}>{t("Upload picture")}</button>
+            <div className="mt-4 text-center">
+                <input type="file" ref={fileInputRef} className="d-none" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                <div className="input-group mb-3">
+                    <button type="button" className="btn border bg-light text-dark" onClick={() => fileInputRef.current?.click()}>{t("Choose File")}</button>
+                    <span className="form-control bg-white text-dark d-flex align-items-center">{file ? file.name : t("No file chosen")}</span>
+                </div>
+                <button className="btn btn-primary mt-2" onClick={uploadProfilePicture}>{t("Upload picture")}</button>
             </div>
+            
         </div>
     );
 };
 
 export default Profile;
+
