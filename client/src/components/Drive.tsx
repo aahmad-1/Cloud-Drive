@@ -163,8 +163,8 @@ const Drive = () => {
             <div className="d-flex align-items-center mb-3">
                 <input type="file" ref={fileInputRef} className="d-none" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
                 <div className="input-group me-2">
-                    <button type="button" className="btn border bg-light text-dark" onClick={() => fileInputRef.current?.click()}>{t("Choose File")}</button>
-                    <span className="form-control bg-white text-dark d-flex align-items-center">{imageFile ? imageFile.name : t("No file chosen")}</span>
+                    <button type="button" className="btn btn-outline-secondary" onClick={() => fileInputRef.current?.click()}>{t("Choose File")}</button>
+                    <span className="form-control d-flex align-items-center">{imageFile ? imageFile.name : t("No file chosen")}</span>
                 </div>
                 <button className="btn btn-secondary text-nowrap" onClick={uploadImage}>{t("Upload image")}</button>
             </div>

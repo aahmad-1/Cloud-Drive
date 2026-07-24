@@ -23,6 +23,8 @@ const DocumentEditor = () => {
     const [originalContent, setOriginalContent] = useState<string>("");
     const [saveMessageType, setSaveMessageType] = useState<string>("success");
     const [shareMessageType, setShareMessageType] = useState<string>("success");
+    const [lockedOut, setLockedOut] = useState<boolean>(false);
+    const [lockedByUsername, setLockedByUsername] = useState<string>("");
 
     const editorRef = useRef<HTMLDivElement>(null); // the div on the page that Quill attaches to
     const quillRef = useRef<Quill | null>(null); // this holds the actual Quill instance
@@ -32,10 +34,66 @@ const DocumentEditor = () => {
     // decode id from the jwt, only if a token actually exists (this prevents crashing/page not loading for logged-out viewers)
     const myId = token ? JSON.parse(atob(token.split(".")[1]))._id : null; 
     const canEdit = myId !== null && (myId === ownerId || editorIds.includes(myId));
+    const isEditable = canEdit && !lockedOut; // user has edit perms for a doc AND no other user is currently editing the same doc
+
+    useEffect(() => {
+        quillRef.current?.enable(isEditable);
+    }, [lockedOut]);
 
     useEffect(() => {
         fetchDocument();
     }, []);
+
+    useEffect(() => {
+        if (!canEdit) return; // no point in locking if the user can't edit anyway (for view only users)
+
+        tryLock();    // runs when we leave the doc
+        return () => {
+            releaseLock();
+        };
+    }, [canEdit]);
+
+    // this releases the lock on a doc if the user closes the tab OR leaves the site
+    useEffect(() => {
+        const handleUnload = () => {
+            // sendBeacon makes sure the unlock request finishes in the background even if the page is closing
+            navigator.sendBeacon(`http://localhost:3000/api/documents/${id}/unlock`); // works even as the page is closing
+        };
+
+        window.addEventListener("beforeunload", handleUnload);
+        return () => window.removeEventListener("beforeunload", handleUnload);
+    }, [id]);
+
+    // tries to claim editing lock when opening a document
+    const tryLock = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/documents/${id}/lock`, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            // if another user already has the doc open, lock us out and grab their username & display who it is
+            const data = await response.json();
+            if (!data.locked) {
+                setLockedOut(true);
+                setLockedByUsername(data.lockedByUsername);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // unlocks the document on the server so other users can edit it again
+    const releaseLock = () => {
+        fetch(`http://localhost:3000/api/documents/${id}/unlock`, {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            },
+        }).catch((error) => console.error(error));
+    };
 
     const fetchDocument = async () => {
         try {
@@ -75,8 +133,8 @@ const DocumentEditor = () => {
                 quillRef.current = new Quill(editorRef.current, options)
                 quillRef.current.clipboard.dangerouslyPasteHTML(data.content); // loading saved HTML content into quill
                 setOriginalContent(quillRef.current.getSemanticHTML());
-                const canEditNow = myId !== null && (myId === data.ownerId || data.editorIds.includes(myId)); // fixes issue that when a user (logged in or out) views a document via link they can type in the content box (they shouldn't be able to)
-                quillRef.current.enable(canEditNow);
+                const canEditBoxNow = myId !== null && (myId === data.ownerId || data.editorIds.includes(myId)); // fixes issue that when a user (logged in or out) views a document via link they can type in the content box (they shouldn't be able to)
+                quillRef.current.enable(canEditBoxNow && !lockedOut);
             }
 
         } catch (error) {
@@ -122,8 +180,43 @@ const DocumentEditor = () => {
         }
     };
 
+    // renaming an image doc
+    const renameImage = async () => {
+
+        if (title === originalTitle) {
+            setSaveMessage("You made no changes to the name!");
+            setSaveMessageType("error");
+            setTimeout(() => setSaveMessage(""), 2000);
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/documents/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ title }),
+            });
+
+            if (!response.ok) {
+                setSaveMessage("Could not save");
+                return;
+            }
+
+            setSaveMessage("Rename Saved!");
+            setSaveMessageType("success");
+            setTimeout(() => setSaveMessage(""), 2000);
+
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // download a text doc as a pdf
     const downloadTextDoc = () => {
-        const text = quillRef.current?.getText() || ""; // plain text only, 
+        const text = quillRef.current?.getText() || ""; // gets plain text only from the doc, ignores formatting like bulletpoints, bolding, underlines, etc
 
         const doc = new jsPDF();
         doc.setFontSize(18);
@@ -136,6 +229,7 @@ const DocumentEditor = () => {
         doc.save(`${title}.pdf`);
     };
 
+    // download an image doc as a pdf
     const downloadImageDoc = async () => {
         try {
             const response = await fetch(`http://localhost:3000${imagePath}`);
@@ -147,7 +241,7 @@ const DocumentEditor = () => {
 
                 const img = new Image();
                 img.onload = () => {
-                    // page size = image's exact dimensions, so the original image becomes the page in the pdf itself
+                    // page size = image's exact dimensions, so the original image becomes the page in the pdf itself when downloaded. inspired by png2pdf.com
                     const doc = new jsPDF({
                         orientation: img.width > img.height ? "landscape" : "portrait",
                         unit: "px",
@@ -174,7 +268,7 @@ const DocumentEditor = () => {
             const response = await fetch(`http://localhost:3000${imagePath}`);
             const blob = await response.blob();
 
-            const actualExtension = imagePath.split(".").pop(); // gets the extension of the image, even if it isn't in the name
+            const actualExtension = imagePath.split(".").pop(); // gets the extension of the image, even if it isn't in the name on the drive
             const filenameWithoutExtension = title.replace(/\.[^/.]+$/, ""); // strips any extension in the title (it may not match the one stored)
 
             const url = window.URL.createObjectURL(blob);
@@ -189,9 +283,8 @@ const DocumentEditor = () => {
         }
     };
 
-
+    // share a doc via username
     const shareDocument = async () => {
-
         if (shareUsername.trim().length < 3 || shareUsername.trim().length > 25) {
             setShareMessage("Please enter a valid username (3-25 characters)");
             setShareMessageType("error");
@@ -247,44 +340,10 @@ const DocumentEditor = () => {
         }
     };
 
-    // renaming an image doc
-    const renameImage = async () => {
-
-        if (title === originalTitle) {
-            setSaveMessage("You made no changes to the name!");
-            setSaveMessageType("error");
-            setTimeout(() => setSaveMessage(""), 2000);
-            return;
-        }
-
-        try {
-            const response = await fetch(`http://localhost:3000/api/documents/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-                body: JSON.stringify({ title }),
-            });
-
-            if (!response.ok) {
-                setSaveMessage("Could not save");
-                return;
-            }
-
-            setSaveMessage("Rename Saved!");
-            setSaveMessageType("success");
-            setTimeout(() => setSaveMessage(""), 2000);
-
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
     if (notFound) {
         return (
             <div className="container">
-                <p>The file you're looking for doesn't exist or has been deleted.</p>
+                <p>The file you're looking for doesn't exist or has been deleted!</p>
             </div>
         );
     }
@@ -295,9 +354,12 @@ const DocumentEditor = () => {
     return (
         <div className="container">
             {!canEdit && <p className="text-muted">View only</p>}
+            {lockedOut && (
+                <p className="text-danger fw-bold">This document is currently being edited by {lockedByUsername}.</p>
+            )}
             <div className="d-flex align-items-stretch mb-4">
-                <input type="text" className="form-control me-3" style={{ fontSize: "1.5rem", fontWeight: "bold" }} value={title}  disabled={!canEdit} onChange={(e) => setTitle(e.target.value)}/>
-                {canEdit && docType === "image" && (
+                <input type="text" className="form-control me-3" style={{ fontSize: "1.5rem", fontWeight: "bold" }} value={title}  disabled={!isEditable} onChange={(e) => setTitle(e.target.value)}/>
+                {isEditable && docType === "image" && (
                     <button className="btn btn-primary text-nowrap" onClick={renameImage}>{t("Rename")}</button>
                 )}
             </div>
@@ -315,10 +377,10 @@ const DocumentEditor = () => {
                     </div>
                 )
             ) : (
-                <div ref={editorRef} style={{ minHeight: "300px", backgroundColor: "white" }}></div>
+                <div ref={editorRef} style={{ minHeight: "300px" }}></div>
             )}
 
-            {canEdit && docType === "text" && (
+            {isEditable && docType === "text" && (
                 <button className="btn btn-primary mt-3" onClick={saveDocument}>{t("Save")}</button>
             )}
             {docType === "text" && (

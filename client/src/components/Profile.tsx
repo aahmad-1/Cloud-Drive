@@ -89,8 +89,8 @@ const Profile = () => {
             <div className="mt-4 text-center">
                 <input type="file" ref={fileInputRef} className="d-none" onChange={(e) => setFile(e.target.files?.[0] || null)} />
                 <div className="input-group mb-3">
-                    <button type="button" className="btn border bg-light text-dark" onClick={() => fileInputRef.current?.click()}>{t("Choose File")}</button>
-                    <span className="form-control bg-white text-dark d-flex align-items-center">{file ? file.name : t("No file chosen")}</span>
+                    <button type="button" className="btn btn-outline-secondary" onClick={() => fileInputRef.current?.click()}>{t("Choose File")}</button>
+                    <span className="form-control d-flex align-items-center">{file ? file.name : t("No file chosen")}</span>
                 </div>
                 <button className="btn btn-primary mt-2" onClick={uploadProfilePicture}>{t("Upload picture")}</button>
             </div>

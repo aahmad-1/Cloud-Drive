@@ -110,3 +110,16 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* makes the Quill toolbar icons & text light during dark mode */
+[data-bs-theme="dark"] .ql-toolbar .ql-stroke {
+  stroke: var(--text-h);
+}
+
+[data-bs-theme="dark"] .ql-toolbar .ql-fill {
+  fill: var(--text-h);
+}
+
+[data-bs-theme="dark"] .ql-toolbar .ql-picker-label {
+  color: var(--text-h);
+}

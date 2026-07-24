@@ -10,9 +10,9 @@ interface ICloudDocument extends Document {
     createdAt: Date
     updatedAt: Date
     deletedAt?: Date | null
-    type: string // "text" or "image"
+    type: string // a doc can be of type "text" or "image"
     imagePath?: string
-    
+    currentlyEditingBy?: string | null 
 }
 
 const cloudDocumentSchema: Schema = new Schema({
@@ -24,7 +24,8 @@ const cloudDocumentSchema: Schema = new Schema({
     deleted: { type: Boolean, required: true, default: false },
     deletedAt: { type: Date, required: false, default: null },
     type: { type: String, required: true, default: "text" },
-    imagePath: { type: String, required: false }
+    imagePath: { type: String, required: false },
+    currentlyEditingBy: { type: String, required: false, default: null } // holds the id of which user has a doc open for editing first
 }, { timestamps: true }) // helps for getting dates for createdAt and updatedAt. Don't have to use manual method of date: new Date() in backend
 
 const CloudDocument: mongoose.Model<ICloudDocument> = mongoose.model<ICloudDocument>("CloudDocument", cloudDocumentSchema)

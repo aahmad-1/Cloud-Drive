@@ -350,4 +350,61 @@ router.post("/upload-image", validateToken, upload.single("image"),
     }
 )
 
+// try to claim the editing lock on a document we want to edit
+router.put("/:id/lock", validateToken,
+    async (req: CustomRequest, res: Response) => {
+        try {
+            const document: ICloudDocument | null = await CloudDocument.findById(req.params.id)
+            if (!document || document.deleted) {
+                return res.status(404).json({ message: "Document not found" })
+            }
+
+            const userId = req.user?._id
+
+            // if no other user has the doc open, or if you already have it open, you can claim/keep the doc editing perms
+            if (!document.currentlyEditingBy || document.currentlyEditingBy === userId) {
+                await CloudDocument.updateOne(
+                    { _id: document._id },
+                    { $set: { currentlyEditingBy: userId } },
+                    { timestamps: false }
+                )
+                return res.status(200).json({ locked: true })
+            }
+
+            // another user already has the doc open, so tell the frontend which user exactly
+            const lockedByUser: IUser | null = await User.findById(document.currentlyEditingBy)
+            return res.status(200).json({ locked: false, lockedByUsername: lockedByUser?.username || "another user" })
+
+        } catch (error: any) {
+            console.error(error)
+            return res.status(500).json({ message: "Internal Server Error" })
+        }
+    }
+)
+
+// release the editing lock if you can actually edit the doc to begin with
+router.put("/:id/unlock", validateToken,
+    async (req: CustomRequest, res: Response) => {
+        try {
+            const document: ICloudDocument | null = await CloudDocument.findById(req.params.id)
+            if (!document) {
+                return res.status(404).json({ message: "Document not found" })
+            }
+
+            if (document.currentlyEditingBy === req.user?._id) {
+                await CloudDocument.updateOne(
+                    { _id: document._id },
+                    { $set: { currentlyEditingBy: null } },
+                    { timestamps: false }
+                )
+            }
+            return res.status(200).json({ message: "Unlocked" })
+
+        } catch (error: any) {
+            console.error(error)
+            return res.status(500).json({ message: "Internal Server Error" })
+        }
+    }
+)
+
 export default router
