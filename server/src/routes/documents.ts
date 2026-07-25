@@ -205,12 +205,12 @@ router.put("/:id/share", validateToken, async (req: CustomRequest, res: Response
             return res.status(400).json({ message: "already shared" })
         }
 
-        if (!document.editorIds.includes(targetUser._id.toString())) { // ensures the "last updated field" doesnt update when sharing a doc by username
-            await CloudDocument.updateOne(
-                { _id: document._id },
-                { timestamps: false }
-            )
-        }
+        await CloudDocument.updateOne(
+            { _id: document._id },
+            { $push: { editorIds: targetUser._id.toString() } },
+            { timestamps: false }
+        )
+        
         const updated = await CloudDocument.findById(document._id)
         return res.status(200).json(updated)
 

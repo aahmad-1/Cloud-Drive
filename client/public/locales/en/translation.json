@@ -55,7 +55,7 @@
     "Shared with {{username}}": "Shared with {{username}}",
     "You can't share with yourself!": "You can't share with yourself!",
     "{{username}} is already shared with": "{{username}} is already shared with",
-    "You can't revoke access from yourself! Try deleting instead.": "You can't revoke access from yourself! Try deleting instead.",
+    "You can't revoke access from yourself. Try deleting instead!": "You can't revoke access from yourself. Try deleting instead!",
     "{{username}} already doesn't have access!": "{{username}} already doesn't have access!",
     "Edit access revoked from {{username}}": "Edit access revoked from {{username}}",
     "Anyone with the link can view (read-only)": "Anyone with the link can view (read-only)",

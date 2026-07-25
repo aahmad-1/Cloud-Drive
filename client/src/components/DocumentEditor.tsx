@@ -385,7 +385,7 @@ const DocumentEditor = () => {
             const data = await response.json();
             if (!response.ok) {
                 let message = data.message;
-                if (data.message === "cannot revoke from yourself") message = "You can't revoke access from yourself! Try deleting instead.";
+                if (data.message === "cannot revoke from yourself") message = "You can't revoke access from yourself. Try deleting instead!";
                 if (data.message === "already doesn't have access") message = "{{username}} already doesn't have access!";
 
                 setRevokeMessage(message);

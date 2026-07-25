@@ -55,7 +55,7 @@
     "Shared with {{username}}": "Jaettu käyttäjälle {{username}}",
     "You can't share with yourself!": "Et voi jakaa itsellesi!",
     "{{username}} is already shared with": "{{username}} on jo jaettu",
-    "You can't revoke access from yourself! Try deleting instead.": "Et voi peruuttaa omaa käyttöoikeuttasi! Kokeile poistamista sen sijaan.",
+    "You can't revoke access from yourself. Try deleting instead!": "Et voi peruuttaa omaa käyttöoikeuttasi. Kokeile poistamista sen sijaan!",
     "{{username}} already doesn't have access!": "{{username}} ei ole enää käyttöoikeutta!",
     "Edit access revoked from {{username}}": "Muokkausoikeus peruutettu käyttäjältä {{username}}",
     "Anyone with the link can view (read-only)": "Kuka tahansa, jolla on linkki, voi tarkastella (vain luku -oikeus)",
