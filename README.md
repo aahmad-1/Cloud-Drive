@@ -41,6 +41,7 @@ Cloud-Drive
 │  ├─ tsconfig.json
 │  ├─ tsconfig.node.json
 │  └─ vite.config.ts
+│  └─ .gitignore
 ├─ package-lock.json
 ├─ package.json
 ├─ .gitkeep
