@@ -10,6 +10,7 @@ const Drive = () => {
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [sortBy, setSortBy] = useState<string>("name");
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [visibleItems, setVisibleItems] = useState<number>(7); // pagination
 
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
@@ -25,6 +26,8 @@ const Drive = () => {
         }
         fetchDocuments();
     }, []);
+
+
 
     // fetch all documents a user has
     const fetchDocuments = async () => {
@@ -139,11 +142,16 @@ const Drive = () => {
         }
     };
 
+    // pagination
+    const showMore = () => {
+        setVisibleItems((previous) => previous + 7);
+    };
+
     return (
         <div className="container">
             <div className="position-relative d-flex align-items-center justify-content-end mb-5 mt-4">
                 <h1 className="position-absolute start-50 translate-middle-x m-0">{username}'s {t("Drive")}</h1>
-                <Link to="/trash" title="Recycle bin"><BsFillTrash3Fill size={24} /></Link>
+                <Link to="/trash" title={t("Recycle Bin")}><BsFillTrash3Fill size={24} /></Link>
             </div>
 
             <div className="d-flex mb-3">
@@ -180,7 +188,7 @@ const Drive = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {displayedDocuments.map((document) => (
+                    {displayedDocuments.slice(0, visibleItems).map((document) => (
                         <tr key={document._id}>
                             <td><Link to={`/document/${document._id}`}>{document.title}</Link></td>
                             <td>{document.ownerUsername === "You" ? t("You") : document.ownerUsername}</td>
@@ -202,6 +210,10 @@ const Drive = () => {
                     ))}
                 </tbody>
             </table>
+
+            {visibleItems < displayedDocuments.length && (
+                <button className="btn btn-outline-secondary" onClick={showMore}>{t("Show More")}</button>
+            )}
         </div>
     );
 };

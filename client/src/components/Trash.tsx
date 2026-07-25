@@ -8,6 +8,7 @@ const Trash = () => {
     const token = localStorage.getItem("token");
     const { t, i18n } = useTranslation();
     const dateLocale = i18n.language === "fi" ? "fi-FI" : "en-US";
+    const [visibleItems, setVisibleItems] = useState<number>(7); // pagination
 
     useEffect(() => {
         if (!token) {
@@ -65,6 +66,11 @@ const Trash = () => {
         }
     };
 
+    // pagination
+    const showMore = () => {
+        setVisibleItems((previous) => previous + 7);
+    };
+
     return (
         <div className="container">
             <h1>{t("Recycle Bin")}</h1>
@@ -81,7 +87,7 @@ const Trash = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {documents.map((document) => (
+                        {documents.slice(0, visibleItems).map((document) => (
                             <tr key={document._id}>
                                 <td>{document.title}</td>
                                 <td title={new Date(document.deletedAt!).toLocaleString(dateLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
@@ -95,6 +101,9 @@ const Trash = () => {
                         ))}
                     </tbody>
                 </table>
+            )}
+            {visibleItems < documents.length && (
+                <button className="btn btn-outline-secondary" onClick={showMore}>{t("Show More")}</button>
             )}
         </div>
     );
