@@ -30,6 +30,7 @@ const Profile = () => {
             setUsername(data.username);
             setProfilePicture(data.profilePicture || "");
             setLoading(false);
+
         } catch (error) {
             console.error(error);
         }
@@ -53,7 +54,6 @@ const Profile = () => {
             const data = await response.json();
             setProfilePicture(data.profilePicture || "");
             setImageError(false); // needed so a newly uploaded pfp isn't blocked by an error from a previous missing image
-
 
         } catch (error) {
             console.error(error);
@@ -79,9 +79,7 @@ const Profile = () => {
                         width: "100px", height: "100px", borderRadius: "50%",
                         backgroundColor: "#0d6efd", color: "white",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "2rem", margin: "0 auto"
-                    }}
-                >
+                        fontSize: "2rem", margin: "0 auto"}}>
                     {username?.charAt(0).toUpperCase()}
                 </div>
             )}

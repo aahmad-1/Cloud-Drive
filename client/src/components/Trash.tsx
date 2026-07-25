@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import type { ICloudDocument } from "../types/CloudDocument";
 import { useTranslation } from "react-i18next";
 
-
 const Trash = () => {
     const [documents, setDocuments] = useState<ICloudDocument[]>([]);
     const token = localStorage.getItem("token");
@@ -15,7 +14,6 @@ const Trash = () => {
             window.location.href = "/login";
             return;
         }
-
         fetchTrash();
     }, []);
 

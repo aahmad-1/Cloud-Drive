@@ -11,14 +11,14 @@ const Register = () => {
         e.preventDefault();
 
         const newErrors: string[] = [];
-        const trimmedUsername = username.trim();
-        const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password);
+        const validUsername = username.trim();
+        const validPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password);
 
-        if (trimmedUsername.length < 3 || trimmedUsername.length > 25) {
+        if (validUsername.length < 3 || validUsername.length > 25) {
             newErrors.push("Please enter a valid username (3-25 characters)");
         }
 
-        if (!strongPassword) {
+        if (!validPassword) {
             newErrors.push("Please enter a valid password (min 8 characters, 1 lowercase, 1 uppercase, 1 number, 1 symbol)");
         }
 
@@ -37,7 +37,7 @@ const Register = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ 
-                    username: trimmedUsername,
+                    username: validUsername,
                     password: password 
                 })
             })

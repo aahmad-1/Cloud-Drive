@@ -5,13 +5,13 @@ import { useTranslation } from "react-i18next";
 
 const Navigation = () => {
     const [jwt, setJwt] = useState<string | null>(null);
-    const [theme, setTheme] = useState<string>("light");
+    const [theme, setTheme] = useState<string>(sessionStorage.getItem("theme") || "light"); // session instead of local since it defaults to light again if a browser is closed
     const location = useLocation();
+    let brand;
+    
 
     useEffect(() => {
-        if(localStorage.getItem("token")) {
-            setJwt(localStorage.getItem("token"))
-        }
+        setJwt(localStorage.getItem("token"))
     }, [jwt])
 
     const { t, i18n } = useTranslation();
@@ -19,23 +19,21 @@ const Navigation = () => {
         i18n.changeLanguage(lng);
     };
 
-    let brand;
-if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") {
-    brand = <span className="navbar-brand">Cloud Drive</span>; // plain text, not clickable
-} else {
-    brand = <Link className="btn btn-outline-secondary" to="/" title={t("Return to Drive")}>{t("Return")}</Link>;
-}
+    if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") {
+        brand = <span className="navbar-brand">Cloud Drive</span>;
+    } else {
+        brand = <Link className="btn btn-outline-secondary" to="/" title={t("Return to Drive")}>{t("Return")}</Link>;
+    }
 
     const applyTheme = (t: string) => {
         document.documentElement.classList.toggle("dark", t === "dark"); // toggles our own CSS variables
         document.documentElement.setAttribute("data-bs-theme", t); 
     };
     
-    // light & dark mode 
     const toggleTheme = () => {
         const newTheme = theme === "light" ? "dark" : "light";
         setTheme(newTheme);
-        localStorage.setItem("theme", newTheme);
+        sessionStorage.setItem("theme", newTheme);
         applyTheme(newTheme);
     };
 
