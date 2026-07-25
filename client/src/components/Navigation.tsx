@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { BsFillMoonStarsFill, BsSunFill } from "react-icons/bs";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 const Navigation = () => {
     const [jwt, setJwt] = useState<string | null>(null);
     const [theme, setTheme] = useState<string>("light");
+    const location = useLocation();
 
     useEffect(() => {
         if(localStorage.getItem("token")) {
@@ -17,6 +18,13 @@ const Navigation = () => {
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
     };
+
+    let brand;
+if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") {
+    brand = <span className="navbar-brand">Cloud Drive</span>; // plain text, not clickable
+} else {
+    brand = <Link className="btn btn-outline-secondary" to="/" title={t("Return to Drive")}>{t("Return")}</Link>;
+}
 
     const applyTheme = (t: string) => {
         document.documentElement.classList.toggle("dark", t === "dark"); // toggles our own CSS variables
@@ -40,7 +48,7 @@ const Navigation = () => {
     return (
         <nav className={`navbar navbar-expand mb-4 ${theme === "light" ? "bg-light" : "bg-dark"}`}>
             <div className="container-fluid">
-                <Link className="navbar-brand" to="/">Cloud Drive</Link>
+                {brand}
                 <div>
                     <span className="me-4" style={{ cursor: "pointer" }} title={theme === "light" ? t("Dark mode") : t("Light mode")} onClick={toggleTheme}>
                         {theme === "light" ? <BsFillMoonStarsFill size={20} /> : <BsSunFill size={20} />}

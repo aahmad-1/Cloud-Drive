@@ -192,14 +192,22 @@ router.put("/:id/share", validateToken, async (req: CustomRequest, res: Response
         }
 
         const targetUser: IUser | null = await User.findOne({ username: req.body.username })
+
         if (!targetUser) {
             return res.status(404).json({ message: "User not found" })
+        }
+
+        if (targetUser._id.toString() === req.user?._id) {
+            return res.status(400).json({ message: "cannot share with yourself" })
+        }
+
+        if (document.editorIds.includes(targetUser._id.toString())) {
+            return res.status(400).json({ message: "already shared" })
         }
 
         if (!document.editorIds.includes(targetUser._id.toString())) { // ensures the "last updated field" doesnt update when sharing a doc by username
             await CloudDocument.updateOne(
                 { _id: document._id },
-                { $push: { editorIds: targetUser._id.toString() } },
                 { timestamps: false }
             )
         }
@@ -399,6 +407,50 @@ router.put("/:id/unlock", validateToken,
                 )
             }
             return res.status(200).json({ message: "Unlocked" })
+
+        } catch (error: any) {
+            console.error(error)
+            return res.status(500).json({ message: "Internal Server Error" })
+        }
+    }
+)
+
+// revoke edit permission from a user (owner only)
+router.put("/:id/revoke", validateToken,
+    async (req: CustomRequest, res: Response) => {
+        try {
+            const document: ICloudDocument | null = await CloudDocument.findById(req.params.id)
+
+            if (!document || document.deleted) {
+                return res.status(404).json({ message: "Document not found" })
+            }
+
+            if (document.ownerId !== req.user?._id) {
+                return res.status(403).json({ message: "Only the owner can revoke access" })
+            }
+
+            const targetUser: IUser | null = await User.findOne({ username: req.body.username })
+
+            if (!targetUser) {
+                return res.status(404).json({ message: "User not found" })
+            }
+
+            if (targetUser._id.toString() === req.user?._id) {
+                return res.status(400).json({ message: "cannot revoke from yourself" })
+            }
+
+            if (!document.editorIds.includes(targetUser._id.toString())) {
+                return res.status(400).json({ message: "already doesn't have access" })
+            }
+
+            await CloudDocument.updateOne(
+                { _id: document._id },
+                { $pull: { editorIds: targetUser._id.toString() } }, // $pull removes a vlaue from an array
+                { timestamps: false }
+            )
+
+            const updated = await CloudDocument.findById(document._id)
+            return res.status(200).json(updated)
 
         } catch (error: any) {
             console.error(error)

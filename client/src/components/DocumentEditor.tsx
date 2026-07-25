@@ -25,6 +25,11 @@ const DocumentEditor = () => {
     const [shareMessageType, setShareMessageType] = useState<string>("success");
     const [lockedOut, setLockedOut] = useState<boolean>(false);
     const [lockedByUsername, setLockedByUsername] = useState<string>("");
+    const [revokeUsername, setRevokeUsername] = useState<string>("");
+    const [revokeMessage, setRevokeMessage] = useState<string>("");
+    const [revokeMessageType, setRevokeMessageType] = useState<string>("success");
+    const [shareMessageUsername, setShareMessageUsername] = useState<string>("");
+    const [revokeMessageUsername, setRevokeMessageUsername] = useState<string>("");
 
     const editorRef = useRef<HTMLDivElement>(null); // the div on the page that Quill attaches to
     const quillRef = useRef<Quill | null>(null); // this holds the actual Quill instance
@@ -285,7 +290,9 @@ const DocumentEditor = () => {
 
     // share a doc via username
     const shareDocument = async () => {
-        if (shareUsername.trim().length < 3 || shareUsername.trim().length > 25) {
+        const trimmed = shareUsername.trim();
+
+        if (trimmed.length < 3 || trimmed.length > 25) {
             setShareMessage("Please enter a valid username (3-25 characters)");
             setShareMessageType("error");
             setTimeout(() => setShareMessage(""), 2000);
@@ -299,20 +306,27 @@ const DocumentEditor = () => {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
                 },
-                body: JSON.stringify({ username: shareUsername }),
+                body: JSON.stringify({ username: trimmed }),
             });
 
             const data = await response.json();
             if (!response.ok) {
-                setShareMessage(data.message || "Could not share document");
+                let message = data.message;
+                if (data.message === "cannot share with yourself") message = "You can't share with yourself!";
+                if (data.message === "already shared") message = "{{username}} is already shared with";
+
+                setShareMessage(message);
+                setShareMessageUsername(trimmed);
                 setShareMessageType("error");
                 setTimeout(() => setShareMessage(""), 2000);
                 return;
             }
 
             setEditorIds(data.editorIds);
-            setShareMessage(`Shared with {{shareUsername}}`);
+            setShareMessage("Shared with {{username}}");
+            setShareMessageUsername(trimmed);
             setShareMessageType("success");
+            setTimeout(() => setShareMessage(""), 2000);
             setShareUsername("");
             
         } catch (error) {
@@ -347,6 +361,51 @@ const DocumentEditor = () => {
             </div>
         );
     }
+
+    const revokeAccess = async () => {
+        const userTrimmed = revokeUsername.trim();
+
+        if (userTrimmed.length < 3 || userTrimmed.length > 25) {
+            setRevokeMessage("Please enter a valid username (3-25 characters)");
+            setRevokeMessageType("error");
+            setTimeout(() => setRevokeMessage(""), 2000);
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/documents/${id}/revoke`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ username: userTrimmed }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                let message = data.message;
+                if (data.message === "cannot revoke from yourself") message = "You can't revoke access from yourself! Try deleting instead.";
+                if (data.message === "already doesn't have access") message = "{{username}} already doesn't have access!";
+
+                setRevokeMessage(message);
+                setRevokeMessageUsername(userTrimmed);
+                setRevokeMessageType("error");
+                setTimeout(() => setRevokeMessage(""), 2000);
+                return;
+            }
+
+            setEditorIds(data.editorIds);
+            setRevokeMessage("Edit access revoked from {{username}}");
+            setRevokeMessageUsername(userTrimmed);
+            setRevokeMessageType("success");
+            setTimeout(() => setRevokeMessage(""), 2000);
+            setRevokeUsername("");
+            
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     // checks the what type of extension an animated image has
     const isAnimatable = imagePath.split(".").pop()?.toLowerCase() === "gif" || imagePath.split(".").pop()?.toLowerCase() === "webp";
@@ -399,12 +458,17 @@ const DocumentEditor = () => {
                 <div className="mt-4 border-top pt-3">
                     <h5 className="mt-2 mb-3">{t("Sharing")}</h5>
 
-                    <div className="d-flex mb-4">
+                    <div className="d-flex mb-2">
                         <input type="text" className="form-control me-2" placeholder={t("Username to give edit access...")} value={shareUsername} onChange={(e) => setShareUsername(e.target.value)}/>
                         <button className="btn btn-secondary" onClick={shareDocument}>{t("Share")}</button>
                     </div>
+                    {shareMessage && <p className={shareMessageType === "success" ? "text-success" : "text-danger"}>{t(shareMessage, { username: shareMessageUsername })}</p>}
 
-                    {shareMessage && <p className={shareMessageType === "success" ? "text-success" : "text-danger"}>{t(shareMessage, { username: shareUsername })}</p>}
+                    <div className="d-flex mb-2">
+                        <input type="text" className="form-control me-2" placeholder={t("Username to revoke edit access...")} value={revokeUsername} onChange={(e) => setRevokeUsername(e.target.value)}/>
+                        <button className="btn btn-secondary" onClick={revokeAccess}>{t("Revoke")}</button>
+                    </div>
+                    {revokeMessage && <p className={revokeMessageType === "success" ? "text-success" : "text-danger"}>{t(revokeMessage, { username: revokeMessageUsername })}</p>}
 
                     <div className="form-check form-switch">
                         <input className="mt-2 form-check-input" type="checkbox" checked={publicView} onChange={togglePublicView}/>

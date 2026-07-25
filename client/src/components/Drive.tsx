@@ -27,7 +27,10 @@ const Drive = () => {
         fetchDocuments();
     }, []);
 
-
+    // resets visible count. whenever search changes. ensures that old "show more" clicks don't carry over into a new search
+    useEffect(() => {
+        setVisibleItems(7);
+    }, [searchTerm]);
 
     // fetch all documents a user has
     const fetchDocuments = async () => {
