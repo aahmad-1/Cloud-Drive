@@ -165,9 +165,10 @@ router.delete("/:id", validateToken, async (req: CustomRequest, res: Response) =
             return res.status(403).json({ message: "Only the owner of this document can delet it" })
         }
 
+        // using updateOne + timestamps: false here instead of document.save(), since save() bumps updatedAt automatically even when the actual content (title/text) didn't change
         await CloudDocument.updateOne( // ensures the "last updated field" doesnt update when deleting a doc/image to recycle bin
             { _id: document._id },
-            { $set: { deleted: true, deletedAt: new Date() } },
+            { $set: { deleted: true, deletedAt: new Date() } }, // $set just replaces a fields value directly
             { timestamps: false }
         )
         return res.status(200).json({ message: "Document successfully moved to recycle bin" })
@@ -233,11 +234,13 @@ router.put("/:id/public", validateToken, async (req: CustomRequest, res: Respons
             return res.status(403).json({ message: "Only the owner can change sharing by link" })
         }
 
-        await CloudDocument.updateOne( // ensures the "last updated field" doesnt update when sharing a doc by link
+        // ensures the "last updated field" doesnt update when sharing a doc by link
+        await CloudDocument.updateOne( 
             { _id: document._id },
             { $set: { publicView: req.body.publicView } },
-            { timestamps: false }
+            { timestamps: false }   // false here instead of document.save(), since save() bumps updatedAt automatically even when the actual content (title/text) didn't change
         )
+
         const updated = await CloudDocument.findById(document._id)
         return res.status(200).json(updated)
 
@@ -259,8 +262,9 @@ router.put("/:id/restore", validateToken, async (req: CustomRequest, res: Respon
         if (document.ownerId !== req.user?._id) {
             return res.status(403).json({ message: "Only the owner can restore this document" })
         }
-
-        await CloudDocument.updateOne( // ensures the "last updated field" doesnt update when restoring a doc/image from recycle bin
+    
+        // ensures the "last updated field" doesnt update when restoring a doc/image from recycle bin
+        await CloudDocument.updateOne( 
             { _id: document._id },
             { $set: { deleted: false, deletedAt: null } },
             { timestamps: false }
@@ -313,8 +317,9 @@ router.post("/:id/clone", validateToken,
             }
 
             const clone: ICloudDocument = await CloudDocument.create({
-                title: `Copy of ${original.title}`, // similar to google docs
+                title: `Copy of ${original.title}`, // similar to how google docs perform doc copies
                 content: original.content,
+                imagePath: original.imagePath,
                 ownerId: userId, // the user that clones a doc becomes the owner of the copy they made
                 editorIds: [],
                 publicView: false,

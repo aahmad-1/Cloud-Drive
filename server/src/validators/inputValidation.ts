@@ -1,4 +1,4 @@
-import { body } from "express-validator" // same as exercise 8 inputValidation file, except replace email with username.
+import { body } from "express-validator"
 
 export const registerValidation = [
     body("username").trim().escape().isLength({ min: 3, max: 25 }),

@@ -1,4 +1,3 @@
-// more or less same as my exercise 8 user.ts file, except email and isAdmin not needed.
 import { Request, Response, Router } from "express" 
 import { validationResult, Result, ValidationError } from "express-validator"
 import bcrypt from "bcrypt"

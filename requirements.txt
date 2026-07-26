@@ -1,0 +1,46 @@
+ROOT:
+
+npm init (entry point: index.js, default)
+npm install concurrently
+
+
+CLIENT:
+
+npm create vite@latest client
+    - Framework: React
+    - Variant: TypeScript
+    - Linter: ESLint
+    - Install with npm and start now? No
+
+cd client
+npm install
+npm install react-router-dom
+npm install i18next react-i18next i18next-http-backend i18next-browser-languagedetector
+npm install bootstrap
+npm install quill
+npm install jspdf
+npm install react-icons
+
+
+SERVER:
+
+cd root folder
+mkdir server
+cd server
+
+npm init (entry point: server.ts)
+tsc --init
+
+npm install express mongoose morgan path dotenv bcrypt jsonwebtoken express-validator multer
+npm install cors
+npm install uuid
+
+npm install --save-dev @types/express @types/morgan @types/bcrypt @types/jsonwebtoken @types/multer @types/node @types/cors @types/uuid
+npm install --save-dev tsc-watch nodemon typescript
+
+
+MISC:
+
+mkdir server/public/images
+touch server/.env
+    - fill in with SECRET, PORT, MONGO_URI (see README)

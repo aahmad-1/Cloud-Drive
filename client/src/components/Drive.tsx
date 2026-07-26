@@ -17,7 +17,13 @@ const Drive = () => {
     const fileInputRef = useRef<HTMLInputElement>(null); // will help translating the words inside the file upload input fields
 
     const { t, i18n } = useTranslation();
-    const dateLocale = i18n.language === "fi" ? "fi-FI" : "en-US";
+    let dateLocale;
+
+    if (i18n.language === "fi") { // matches the date tooltip format to whatever language the user toggled. ignores their browser/device settings
+        dateLocale = "fi-FI";
+    } else {
+        dateLocale = "en-US";
+    } 
 
     useEffect(() => {
         if (!token) {
@@ -201,8 +207,6 @@ const Drive = () => {
                             <td title={new Date(document.updatedAt).toLocaleString(dateLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
                                 {new Date(document.updatedAt).toLocaleDateString()}
                             </td>
-                            {/* <td>{new Date(document.createdAt).toLocaleDateString()}</td>
-                            <td>{new Date(document.updatedAt).toLocaleDateString()}</td> */}
                             <td>
                                 <button className="btn btn-outline-secondary btn-sm me-2" onClick={() => cloneDocument(document._id)}>{t("Clone")}</button>
                                 {document.ownerUsername === "You" && (

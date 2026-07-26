@@ -58,7 +58,7 @@ const DocumentEditor = () => {
         };
     }, [canEdit]);
 
-    // this releases the lock on a doc if the user closes the tab OR leaves the site
+    // this releases the edit lock on a doc if the user closes the tab OR leaves the site
     useEffect(() => {
         const handleUnload = () => {
             // sendBeacon makes sure the unlock request finishes in the background even if the page is closing
@@ -174,6 +174,8 @@ const DocumentEditor = () => {
 
             if (!response.ok) {
                 setSaveMessage("Could not save");
+                setSaveMessageType("error");
+                setTimeout(() => setSaveMessage(""), 2000);
                 return;
             }
 
@@ -207,6 +209,8 @@ const DocumentEditor = () => {
 
             if (!response.ok) {
                 setSaveMessage("Could not save");
+                setSaveMessageType("error");
+                setTimeout(() => setSaveMessage(""), 2000);
                 return;
             }
 

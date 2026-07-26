@@ -7,7 +7,7 @@ const storage: StorageEngine = multer.diskStorage({
         cb(null, "./public/images");
     },
     filename: (req, file, cb) => {
-        const id = uuidv4(); // generates a unique id (something like 'b18794e8-5d0d-417c-b361-ba38e78411b4')
+        const id = uuidv4(); // generates a unique id e.g.'b18794e8-5d0d-417c-b361-ba38e78411b4'
         const extension = path.extname(file.originalname); // returns extension (bike.png returns .png)
         const originalFilename = path.parse(file.originalname).name; // returns only filename (bike.png returns just bike)
         cb(null, `${originalFilename}_${id}${extension}`);

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express" // same from my exercise 8 work, excluding the validAdmin function expression
+import { Request, Response, NextFunction } from "express"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import dotenv from "dotenv"
 

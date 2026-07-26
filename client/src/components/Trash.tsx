@@ -34,7 +34,7 @@ const Trash = () => {
         }
     };
 
-    const restoreDocument = async (id: string) => {
+    const restoreDoc = async (id: string) => {
         try {
             await fetch(`http://localhost:3000/api/documents/${id}/restore`, {
                 method: "PUT",
@@ -92,7 +92,7 @@ const Trash = () => {
                                     {new Date(document.deletedAt!).toLocaleDateString()}
                                 </td>
                                 <td className="text-end">
-                                    <button className="btn btn-outline-success btn-sm me-2" onClick={() => restoreDocument(document._id)}>{t("Restore")}</button>
+                                    <button className="btn btn-outline-success btn-sm me-2" onClick={() => restoreDoc(document._id)}>{t("Restore")}</button>
                                     <button className="btn btn-outline-danger btn-sm" onClick={() => permanentlyDelete(document._id)}>{t("Delete permanently")}</button>
                                 </td>
                             </tr>
