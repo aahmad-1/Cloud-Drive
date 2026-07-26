@@ -123,3 +123,16 @@ code {
 [data-bs-theme="dark"] .ql-toolbar .ql-picker-label {
   color: var(--text-h);
 }
+
+.trash-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+@media (max-width: 767px) {
+    .trash-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+}

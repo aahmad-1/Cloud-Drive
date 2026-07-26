@@ -1,6 +1,7 @@
 {
     "Login": "Kirjaudu sisään",
     "Register": "Rekisteröidy",
+    "Return": "Palata",
     "Please enter a valid username (3-25 characters)": "Anna kelvollinen käyttäjänimi (3-25 merkkiä)",
     "Please enter a valid password (min 8 characters, 1 lowercase, 1 uppercase, 1 number, 1 symbol)": "Syötä kelvollinen salasana (vähintään 8 merkkiä, joista 1 pieni kirjain, 1 iso kirjain, 1 numero ja 1 erikoismerkki).",
     "Username already in use": "Käyttäjänimi on jo käytössä",

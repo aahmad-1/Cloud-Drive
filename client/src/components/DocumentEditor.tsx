@@ -474,14 +474,14 @@ const DocumentEditor = () => {
                     </div>
                     {revokeMessage && <p className={revokeMessageType === "success" ? "text-success" : "text-danger"}>{t(revokeMessage, { username: revokeMessageUsername })}</p>}
 
-                    <div className="form-check form-switch">
-                        <input className="mt-2 form-check-input" type="checkbox" checked={publicView} onChange={togglePublicView}/>
-                        <label className="mt-2 form-check-label">{t("Anyone with the link can view (read-only)")}</label>
+                    <div className="d-flex justify-content-center align-items-center gap-3 form-check form-switch">
+                        <input className="mt-3 form-check-input" type="checkbox" checked={publicView} onChange={togglePublicView}/>
+                        <label className="mt-3 form-check-label">{t("Anyone with the link can view (read-only)")}</label>
                     </div>
 
                     {publicView && (
-                        <p className="mt-2">
-                            {t("Share link")}: <code>{window.location.origin}/document/{id}</code>
+                        <p className="mt-3">
+                            {t("Share link")}: <code style={{ wordBreak: "break-all" }}>{window.location.origin}/document/{id}</code>
                         </p>
                     )}
                 </div>

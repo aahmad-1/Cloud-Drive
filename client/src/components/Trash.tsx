@@ -76,29 +76,31 @@ const Trash = () => {
             {documents.length === 0 ? (
                 <p className="text-muted mt-5">{t("Nothing to see here! Delete some files first.")}</p>
             ) : (
-                <table className="table mt-5">
-                    <thead>
-                        <tr>
-                            <th>{t("Title")}</th>
-                            <th>{t("Deleted at")}</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {documents.slice(0, visibleItems).map((document) => (
-                            <tr key={document._id}>
-                                <td>{document.title}</td>
-                                <td title={new Date(document.deletedAt!).toLocaleString(dateLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
-                                    {new Date(document.deletedAt!).toLocaleDateString()}
-                                </td>
-                                <td className="text-end">
-                                    <button className="btn btn-outline-success btn-sm me-2" onClick={() => restoreDoc(document._id)}>{t("Restore")}</button>
-                                    <button className="btn btn-outline-danger btn-sm" onClick={() => permanentlyDelete(document._id)}>{t("Delete permanently")}</button>
-                                </td>
+                <div className="table-responsive">
+                    <table className="table mt-5">
+                        <thead>
+                            <tr>
+                                <th>{t("Title")}</th>
+                                <th>{t("Deleted at")}</th>
+                                <th></th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {documents.slice(0, visibleItems).map((document) => (
+                                <tr key={document._id}>
+                                    <td>{document.title}</td>
+                                    <td title={new Date(document.deletedAt!).toLocaleString(dateLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
+                                        {new Date(document.deletedAt!).toLocaleDateString()}
+                                    </td>
+                                    <td className="trash-buttons text-end">
+                                        <button className="btn btn-outline-success btn-sm" onClick={() => restoreDoc(document._id)}>{t("Restore")}</button>
+                                        <button className="btn btn-outline-danger btn-sm" onClick={() => permanentlyDelete(document._id)}>{t("Delete permanently")}</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
             {visibleItems < documents.length && (
                 <button className="btn btn-outline-secondary" onClick={showMore}>{t("Show More")}</button>

@@ -177,7 +177,7 @@ const Drive = () => {
                 <button type="submit" className="btn btn-primary">{t("Create")}</button>
             </form>
             
-            <div className="d-flex align-items-center mb-3">
+            <div className="d-flex align-items-stretch mb-3">
                 <input type="file" ref={fileInputRef} className="d-none" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
                 <div className="input-group me-2">
                     <button type="button" className="btn btn-outline-secondary" onClick={() => fileInputRef.current?.click()}>{t("Choose File")}</button>
@@ -186,37 +186,39 @@ const Drive = () => {
                 <button className="btn btn-secondary text-nowrap" onClick={uploadImage}>{t("Upload image")}</button>
             </div>
 
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>{t("Title")}</th>
-                        <th>{t("Owner")}</th>
-                        <th>{t("Created")}</th>
-                        <th>{t("Last updated")}</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {displayedDocuments.slice(0, visibleItems).map((document) => (
-                        <tr key={document._id}>
-                            <td><Link to={`/document/${document._id}`}>{document.title}</Link></td>
-                            <td>{document.ownerUsername === "You" ? t("You") : document.ownerUsername}</td>
-                            <td title={new Date(document.createdAt).toLocaleString(dateLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
-                                {new Date(document.createdAt).toLocaleDateString()}
-                            </td>
-                            <td title={new Date(document.updatedAt).toLocaleString(dateLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
-                                {new Date(document.updatedAt).toLocaleDateString()}
-                            </td>
-                            <td>
-                                <button className="btn btn-outline-secondary btn-sm me-2" onClick={() => cloneDocument(document._id)}>{t("Clone")}</button>
-                                {document.ownerUsername === "You" && (
-                                    <button className="btn btn-outline-danger btn-sm" onClick={() => deleteDocument(document._id)}>{t("Delete")}</button>
-                                )}
-                            </td>
+            <div className="table-responsive">
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <th>{t("Title")}</th>
+                            <th>{t("Owner")}</th>
+                            <th>{t("Created")}</th>
+                            <th>{t("Last updated")}</th>
+                            <th></th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {displayedDocuments.slice(0, visibleItems).map((document) => (
+                            <tr key={document._id}>
+                                <td><Link to={`/document/${document._id}`}>{document.title}</Link></td>
+                                <td>{document.ownerUsername === "You" ? t("You") : document.ownerUsername}</td>
+                                <td title={new Date(document.createdAt).toLocaleString(dateLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
+                                    {new Date(document.createdAt).toLocaleDateString()}
+                                </td>
+                                <td title={new Date(document.updatedAt).toLocaleString(dateLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" })}>
+                                    {new Date(document.updatedAt).toLocaleDateString()}
+                                </td>
+                                <td className="drive-docButtons">
+                                    <button className="btn btn-outline-secondary btn-sm me-2" onClick={() => cloneDocument(document._id)}>{t("Clone")}</button>
+                                    {document.ownerUsername === "You" && (
+                                        <button className="btn btn-outline-danger btn-sm" onClick={() => deleteDocument(document._id)}>{t("Delete")}</button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
             {visibleItems < displayedDocuments.length && (
                 <button className="btn btn-outline-secondary" onClick={showMore}>{t("Show More")}</button>
