@@ -64,5 +64,12 @@
     "Restore": "Restore",
     "Delete permanently": "Delete permanently",
     "Nothing to see here! Delete some files first.": "Nothing to see here! Delete some files first.",
-    "Deleted at": "Deleted at"
+    "Deleted at": "Deleted at",
+    "The file you're looking for doesn't exist, has been deleted, or you don't have access to!": "The file you're looking for doesn't exist, has been deleted, or you don't have access to!",
+    "Invalid URL! Press Return to go back to the main drive.": "Invalid URL! Press Return to go back to the main drive.",
+    "Invalid URL! Press Return or Login to get to the login page.": "Invalid URL! Press Return or Login to get to the login page.",
+    "You're not logged in to see your drive! Press Login or Register to continue.": "You're not logged in to see your drive! Press Login or Register to continue.",
+    "You're not logged in to see your profile! Press Login to get to the login page.": "You're not logged in to see your profile! Press Login to get to the login page.",
+    "You're not logged in to see the trash! Press Login to get to the login page.": "You're not logged in to see the trash! Press Login to get to the login page.",
+    "This document is currently being edited by {{username}}.": "This document is currently being edited by {{username}}."
 }

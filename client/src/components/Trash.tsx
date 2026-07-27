@@ -10,11 +10,7 @@ const Trash = () => {
     const [visibleItems, setVisibleItems] = useState<number>(7); // pagination
 
     useEffect(() => {
-        if (!token) {
-            window.location.href = "/login";
-            return;
-        }
-        fetchTrash();
+        if (token) fetchTrash();
     }, []);
 
     const fetchTrash = async () => {
@@ -68,6 +64,14 @@ const Trash = () => {
     const showMore = () => {
         setVisibleItems((previous) => previous + 7);
     };
+
+    if (!token) { // accessing trash page while not logged in
+        return (
+            <div className="container">
+                <p className="mt-4">{t("You're not logged in to see the trash! Press Login to get to the login page.")}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="container">

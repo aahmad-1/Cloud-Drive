@@ -361,7 +361,7 @@ const DocumentEditor = () => {
     if (notFound) {
         return (
             <div className="container">
-                <p>The file you're looking for doesn't exist or has been deleted!</p>
+                <p className="mt-4">{t("The file you're looking for doesn't exist, has been deleted, or you don't have access to!")}</p>
             </div>
         );
     }
@@ -418,7 +418,7 @@ const DocumentEditor = () => {
         <div className="container">
             {!canEdit && <p className="text-muted">View only</p>}
             {lockedOut && (
-                <p className="text-danger fw-bold">This document is currently being edited by {lockedByUsername}.</p>
+                <p className="text-danger fw-bold">{t("This document is currently being edited by {{username}}.", { username: lockedByUsername })}</p>
             )}
             <div className="d-flex align-items-stretch mb-4">
                 <input type="text" className="form-control me-3" style={{ fontSize: "1.5rem", fontWeight: "bold" }} value={title}  disabled={!isEditable} onChange={(e) => setTitle(e.target.value)}/>

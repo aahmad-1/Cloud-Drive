@@ -26,11 +26,7 @@ const Drive = () => {
     } 
 
     useEffect(() => {
-        if (!token) {
-            window.location.href = "/login"; // non-authenticated users cant see anything
-            return;
-        }
-        fetchDocuments();
+        if (token) fetchDocuments();
     }, []);
 
     // resets visible count. whenever search changes. ensures that old "show more" clicks don't carry over into a new search
@@ -155,6 +151,14 @@ const Drive = () => {
     const showMore = () => {
         setVisibleItems((previous) => previous + 7);
     };
+
+    if (!token) { // accessing the drive page while not logged in
+        return (
+            <div className="container">
+                <p className="mt-4">{t("You're not logged in to see your drive! Press Login or Register to continue.")}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="container">

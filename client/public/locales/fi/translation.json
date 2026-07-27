@@ -64,5 +64,12 @@
     "Restore": "Palauta",
     "Delete permanently": "Poista pysyvästi",
     "Nothing to see here! Delete some files first.": "Täällä ei ole mitään nähtävää! Poista ensin joitakin tiedostoja.",
-    "Deleted at": "Poista kohdasta"
+    "Deleted at": "Poista kohdasta",
+    "The file you're looking for doesn't exist, has been deleted, or you don't have access to!": "Etsimääsi tiedostoa ei ole olemassa, se on poistettu tai sinulla ei ole siihen käyttöoikeutta!",
+    "Invalid URL! Press Return to go back to the main drive.": "Virheellinen URL-osoite! Palaa pääasemalle painamalla Enter-näppäintä.",
+    "Invalid URL! Press Return or Login to get to the login page.": "Virheellinen URL-osoite! Siirry kirjautumissivulle painamalla Enter-näppäintä tai valitsemalla Kirjaudu sisään.",
+    "You're not logged in to see your drive! Press Login or Register to continue.": "Et ole kirjautunut sisään nähdäksesi Drive-sisältösi! Jatka valitsemalla Kirjaudu tai Rekisteröidy.",
+    "You're not logged in to see your profile! Press Login to get to the login page.": "Et ole kirjautunut sisään nähdäksesi profiilisi! Paina Enter-näppäintä tai valitse ”Kirjaudu sisään” siirtyäksesi kirjautumissivulle.",
+    "You're not logged in to see the trash! Press Login to get to the login page.": "Et ole kirjautunut sisään nähdäksesi roskakorin sisällön! Siirry kirjautumissivulle painamalla Kirjaudu sisään.",
+    "This document is currently being edited by {{username}}.": "Tätä dokumenttia muokkaa parhaillaan {{username}}."
 }

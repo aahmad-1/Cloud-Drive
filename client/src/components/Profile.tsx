@@ -14,7 +14,7 @@ const Profile = () => {
     const fileInputRef = useRef<HTMLInputElement>(null); // helps translate the words inside the file upload input fields
 
     useEffect(() => {
-        fetchMyInfo();
+        if (token) fetchMyInfo();
     }, []);
 
     const fetchMyInfo = async () => {
@@ -59,6 +59,14 @@ const Profile = () => {
             console.error(error);
         }
     };
+
+    if (!token) { //profile url visit if not logged in
+        return (
+            <div className="container">
+                <p className="mt-4">{t("You're not logged in to see your profile! Press Login to get to the login page.")}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="container">
