@@ -6,7 +6,7 @@ const Trash = () => {
     const [documents, setDocuments] = useState<ICloudDocument[]>([]);
     const token = localStorage.getItem("token");
     const { t, i18n } = useTranslation();
-    const dateLocale = i18n.language === "fi" ? "fi-FI" : "en-US";
+    const dateLocale = i18n.language === "fi" ? "fi-FI" : "en-US"; // helps translate dates shown in tooltips
     const [visibleItems, setVisibleItems] = useState<number>(7); // pagination
 
     useEffect(() => {
@@ -21,6 +21,12 @@ const Trash = () => {
                     "Authorization": `Bearer ${token}`,
                 },
             });
+
+            if (!response.ok) {
+                localStorage.removeItem("token"); // token becomes expired/invalid after 2hrs so treat as logged out
+                window.location.reload();
+                return;
+            }
 
             const data = await response.json();
             setDocuments(data);

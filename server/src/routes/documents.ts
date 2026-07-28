@@ -80,7 +80,7 @@ router.get("/trash", validateToken, async (req: CustomRequest, res: Response) =>
     }
 })
 
-// Get a single document by id (owner, editor, or public view)
+// get a single document by id (owner, editor, or public view)
 router.get("/:id", async (req: CustomRequest, res: Response) => {
     try {
         const document: ICloudDocument | null = await CloudDocument.findById(req.params.id)
@@ -165,8 +165,8 @@ router.delete("/:id", validateToken, async (req: CustomRequest, res: Response) =
             return res.status(403).json({ message: "Only the owner of this document can delet it" })
         }
 
-        // using updateOne + timestamps: false here instead of document.save(), since save() bumps updatedAt automatically even when the actual content (title/text) didn't change
-        await CloudDocument.updateOne( // ensures the "last updated field" doesnt update when deleting a doc/image to recycle bin
+        // using updateOne + timestamps: false here instead of document.save(), since save() changes updatedAt automatically even when the actual content (title/text) didn't change
+        await CloudDocument.updateOne( // ensures the "last updated field" doesnt update when deleting a doc/image to recycle bin, like Google Drive
             { _id: document._id },
             { $set: { deleted: true, deletedAt: new Date() } }, // $set just replaces a fields value directly
             { timestamps: false }
@@ -206,14 +206,10 @@ router.put("/:id/share", validateToken, async (req: CustomRequest, res: Response
             return res.status(400).json({ message: "already shared" })
         }
 
-        await CloudDocument.updateOne(
-            { _id: document._id },
-            { $push: { editorIds: targetUser._id.toString() } },
-            { timestamps: false }
-        )
-        
-        const updated = await CloudDocument.findById(document._id)
-        return res.status(200).json(updated)
+        document.editorIds.push(targetUser._id.toString())
+        await document.save()
+
+        return res.status(200).json(document)
 
     } catch (error: any) {
         console.error(error)
@@ -234,15 +230,10 @@ router.put("/:id/public", validateToken, async (req: CustomRequest, res: Respons
             return res.status(403).json({ message: "Only the owner can change sharing by link" })
         }
 
-        // ensures the "last updated field" doesnt update when sharing a doc by link
-        await CloudDocument.updateOne( 
-            { _id: document._id },
-            { $set: { publicView: req.body.publicView } },
-            { timestamps: false }   // false here instead of document.save(), since save() bumps updatedAt automatically even when the actual content (title/text) didn't change
-        )
+        document.publicView = req.body.publicView
+        await document.save()
 
-        const updated = await CloudDocument.findById(document._id)
-        return res.status(200).json(updated)
+        return res.status(200).json(document)
 
     } catch (error: any) {
         console.error(error)
@@ -448,14 +439,10 @@ router.put("/:id/revoke", validateToken,
                 return res.status(400).json({ message: "already doesn't have access" })
             }
 
-            await CloudDocument.updateOne(
-                { _id: document._id },
-                { $pull: { editorIds: targetUser._id.toString() } }, // $pull removes a vlaue from an array
-                { timestamps: false }
-            )
+            document.editorIds = document.editorIds.filter((editorId) => editorId !== targetUser._id.toString())
+            await document.save()
 
-            const updated = await CloudDocument.findById(document._id)
-            return res.status(200).json(updated)
+            return res.status(200).json(document)
 
         } catch (error: any) {
             console.error(error)

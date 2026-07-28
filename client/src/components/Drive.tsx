@@ -44,6 +44,12 @@ const Drive = () => {
                 },
             });
 
+            if (!response.ok) {
+                localStorage.removeItem("token"); // token becomes expired/invalid after 2hrs so treat as logged out
+                window.location.reload();
+                return;
+            }
+
             const data = await response.json();
             setDocuments(data);
 
