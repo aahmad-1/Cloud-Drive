@@ -67,7 +67,7 @@ const Register = () => {
                 <input type="text" id="username" className="form-control mb-2" value={username} onChange={(e) => setUsername(e.target.value)}/>
                 <label htmlFor="password">{t("Password")}:</label>
                 <input type="password" id="password" className="form-control mb-3" value={password} onChange={(e) => setPassword(e.target.value)}/>
-                <button type="submit" className="btn btn-primary">Register</button>
+                <button type="submit" className="btn btn-primary">{t("Register")}</button>
                 {errors.map((error, i) => <p key={i} className="text-danger mt-3">{t(error)}</p>)}
             </form>
         </div>

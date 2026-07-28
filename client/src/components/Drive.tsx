@@ -76,7 +76,7 @@ const Drive = () => {
             });
 
             const data = await response.json();
-            setDocuments([...documents, { ...data, ownerUsername: "You" }]); // makes sure "You" is loaded right away under owner column
+            setDocuments([...documents, { ...data, ownerUsername: "You" }]); // this makes sure "You" is loaded right away under owner column
             setNewTitle("");
 
         } catch (error) {
@@ -93,8 +93,10 @@ const Drive = () => {
                     "Authorization": `Bearer ${token}`,
                 },
             });
+
             if (!response.ok) return; // not the owner so nothing actually happened on server-side
             setDocuments(documents.filter((document) => document._id !== id)); // remove deleted doc from state without refetching everything
+
         } catch (error) {
             console.error(error);
         }
@@ -111,7 +113,8 @@ const Drive = () => {
             });
 
             const data = await response.json();
-            setDocuments([...documents, { ...data, ownerUsername: "You" }]); // makes sure "You" is loaded right away under owner column
+            setDocuments([...documents, { ...data, ownerUsername: "You" }]);
+
         } catch (error) {
             console.error(error);
         }
@@ -127,7 +130,7 @@ const Drive = () => {
             if (sortBy === "created") {
                 return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
             }
-            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(); // "updated"
+            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(); // by last updated
         });
 
     // upload an image as a doc

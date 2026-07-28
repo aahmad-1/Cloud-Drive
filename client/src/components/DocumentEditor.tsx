@@ -277,13 +277,13 @@ const DocumentEditor = () => {
             const response = await fetch(`http://localhost:3000${imagePath}`);
             const blob = await response.blob();
 
-            const actualExtension = imagePath.split(".").pop(); // gets the extension of the image, even if it isn't in the name on the drive
-            const filenameWithoutExtension = title.replace(/\.[^/.]+$/, ""); // strips any extension in the title (it may not match the one stored)
+            const realExtension = imagePath.split(".").pop(); // gets the extension of the image, even if it isn't in the name on the drive
+            const filenameNoExtension = title.replace(/\.[^/.]+$/, ""); // strips any extension in the title (it may not match the one stored)
 
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `${filenameWithoutExtension}.${actualExtension}`;
+            a.download = `${filenameNoExtension}.${realExtension}`;
             a.click();
 
             window.URL.revokeObjectURL(url); // cleans up the temp blob url afterward
@@ -366,6 +366,7 @@ const DocumentEditor = () => {
         );
     }
 
+    // remove a users access from a doc via their username
     const revokeAccess = async () => {
         const userTrimmed = revokeUsername.trim();
 

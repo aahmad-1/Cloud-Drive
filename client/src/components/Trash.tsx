@@ -6,8 +6,14 @@ const Trash = () => {
     const [documents, setDocuments] = useState<ICloudDocument[]>([]);
     const token = localStorage.getItem("token");
     const { t, i18n } = useTranslation();
-    const dateLocale = i18n.language === "fi" ? "fi-FI" : "en-US"; // helps translate dates shown in tooltips
     const [visibleItems, setVisibleItems] = useState<number>(7); // pagination
+
+    let dateLocale;
+    if (i18n.language === "fi") { // matches the date tooltip format to whatever language the user toggled. ignores their browser/device settings
+        dateLocale = "fi-FI";
+    } else {
+        dateLocale = "en-US";
+    } 
 
     useEffect(() => {
         if (token) fetchTrash();

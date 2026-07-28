@@ -26,7 +26,7 @@ const Navigation = () => {
     }
 
     const applyTheme = (t: string) => {
-        document.documentElement.classList.toggle("dark", t === "dark"); // toggles our own CSS variables
+        document.documentElement.classList.toggle("dark", t === "dark"); // toggles own CSS variables
         document.documentElement.setAttribute("data-bs-theme", t); 
     };
     

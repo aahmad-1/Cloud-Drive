@@ -6,10 +6,9 @@ const Profile = () => {
     const [profilePicture, setProfilePicture] = useState<string>("");
     const [file, setFile] = useState<File | null>(null);
     const [imageError, setImageError] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(true); // avoids flickering of profile pics
+    const [loading, setLoading] = useState<boolean>(true); // avoids flickering of profile pics when loading into profile page
 
     const token = localStorage.getItem("token");
-
     const { t } = useTranslation();
     const fileInputRef = useRef<HTMLInputElement>(null); // helps translate the words inside the file upload input fields
 
