@@ -32,6 +32,7 @@
 
 - Node.js
 - MongoDB running locally
+- A web browser
 
 ### Installation
 
@@ -71,38 +72,5 @@ This starts both servers concurrently:
 Open http://localhost:5173 in your browser.
 
 ---
-## Notes
 
-- Visiting `/` while logged out automatically redirects to `/login` (handled per-page, not by the router itself).
-- See `requirements.txt` for the exact commands used to set up this project from scratch.
-
-## API Endpoints
-
-### Auth
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register a new user |
-| POST | `/api/auth/login` | Log in, returns a JWT |
-| GET | `/api/auth/me` | Get the logged-in user's info |
-| PUT | `/api/auth/profile-picture` | Upload a profile picture |
-
-### Documents
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/documents` | Get all documents owned by or shared with the user |
-| POST | `/api/documents` | Create a new document |
-| GET | `/api/documents/trash` | Get all documents in the recycle bin |
-| GET | `/api/documents/:id` | Get a single document (owner, editor, or public view) |
-| PUT | `/api/documents/:id` | Edit a document's title/content |
-| DELETE | `/api/documents/:id` | Move a document to the recycle bin |
-| PUT | `/api/documents/:id/share` | Give edit access to a user |
-| PUT | `/api/documents/:id/revoke` | Revoke edit access from a user |
-| PUT | `/api/documents/:id/public` | Toggle the public read-only link |
-| PUT | `/api/documents/:id/restore` | Restore a document from the recycle bin |
-| DELETE | `/api/documents/:id/permanent` | Permanently delete a document |
-| POST | `/api/documents/:id/clone` | Clone an existing document |
-| POST | `/api/documents/upload-image` | Upload an image as a new document |
-| PUT | `/api/documents/:id/lock` | Claim the editing lock on a document |
-| PUT | `/api/documents/:id/unlock` | Release the editing lock |
+Refer to the project documentation for installation details, API endpoints, user manual, and other userful information.
