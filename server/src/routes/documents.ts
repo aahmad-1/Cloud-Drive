@@ -310,6 +310,7 @@ router.post("/:id/clone", validateToken,
             const clone: ICloudDocument = await CloudDocument.create({
                 title: `Copy of ${original.title}`, // similar to how google docs perform doc copies
                 content: original.content,
+                type: original.type,
                 imagePath: original.imagePath,
                 ownerId: userId, // the user that clones a doc becomes the owner of the copy they made
                 editorIds: [],
