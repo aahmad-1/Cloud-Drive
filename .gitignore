@@ -6,3 +6,5 @@ client/dist/
 # Ignore uploaded images, but keep the folder structure
 server/public/images/*
 !server/public/images/.gitkeep
+
+Project Report Documentation.pdf

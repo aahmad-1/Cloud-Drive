@@ -73,4 +73,4 @@ Open http://localhost:5173 in your browser.
 
 ---
 
-Refer to the project documentation for installation details, API endpoints, user manual, and other userful information.
+Refer to the documentation for installation details, API endpoints, user manual, and other userful information.
