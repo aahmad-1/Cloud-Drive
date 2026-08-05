@@ -1,6 +1,6 @@
 # Cloud Drive
 
-> Full-stack cloud document storage app where users can register, log in, and create, edit, and share text documents and images.
+> A Full-stack cloud document storage app.
 
 **Tech Stack:** React, TypeScript, Express, MongoDB, JWT, Quill, i18next, Bootstrap, Vite
 
